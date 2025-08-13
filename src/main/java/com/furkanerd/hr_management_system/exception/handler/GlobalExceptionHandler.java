@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.exception.handler;
 
 import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
+import com.furkanerd.hr_management_system.exception.PositionNotFoundException;
 import com.furkanerd.hr_management_system.model.dto.response.ErrorResponseDto;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,21 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(PositionNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handlePositionNotFoundException(PositionNotFoundException e) {
+        log.error("Position not found: {}" , e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(e.getMessage())
+                .path("api/v1/positions")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
     @ExceptionHandler(DepartmentNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleDepartmentNotFoundException(DepartmentNotFoundException e) {
         log.error("Department not found: {}" , e.getMessage());
@@ -29,7 +45,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND.value())
                 .error("Not Found")
                 .message(e.getMessage())
-                .path("api/v1/department")
+                .path("api/v1/departments")
                 .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);

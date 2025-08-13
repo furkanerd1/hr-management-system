@@ -7,4 +7,8 @@ public class ApiPaths {
     // DEPARTMENTS
     public static final String DEPARTMENTS= API_VERSION+"/departments";
     public static final String DEPARTMENTS_BY_ID= API_VERSION+"/departments/{id}";
+
+    // POSITIONS
+    public static final String  POSITIONS = API_VERSION+"/positions";
+    public static final String  POSITIONS_BY_ID = API_VERSION+"/positions/{id}";
 }
