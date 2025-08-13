@@ -50,6 +50,8 @@ public class PositionServiceImpl implements PositionService {
     public PositionDetailResponse updatePosition(UUID positionID, PositionUpdateRequest updateRequest) {
         Position toUpdate =  positionRepository.findById(positionID)
                 .orElseThrow(() -> new PositionNotFoundException("Position not found with id : " + positionID));
+        toUpdate.setTitle(updateRequest.title());
+        toUpdate.setDescription(updateRequest.description());
         return   positionMapper.positionToPositionDetailResponse(positionRepository.save(toUpdate));
     }
 
