@@ -26,9 +26,13 @@ public class DepartmentController {
     }
 
     @GetMapping
-    //TODO : Role based ( HR, MANAGER)
     public ResponseEntity<List<ListDepartmentResponse>> getAllDepartments() {
         return ResponseEntity.ok(departmentService.listAllDepartments());
+    }
+
+    @GetMapping(DEPARTMENTS_BY_ID)
+    public ResponseEntity<DepartmentDetailResponse> getDepartmentById(@PathVariable("id") UUID departmentId) {
+        return ResponseEntity.ok(departmentService.getDepartmentById(departmentId));
     }
 
     @PostMapping
@@ -47,6 +51,7 @@ public class DepartmentController {
     }
 
     @DeleteMapping(DEPARTMENTS_BY_ID)
+    //TODO : Role based ( HR)
     public ResponseEntity<Void> deleteDepartment(
             @PathVariable("id") UUID departmentId){
         departmentService.deleteDepartment(departmentId);
