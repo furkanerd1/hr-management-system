@@ -6,7 +6,6 @@ import com.furkanerd.hr_management_system.model.dto.response.department.Departme
 import com.furkanerd.hr_management_system.model.dto.response.department.ListDepartmentResponse;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface DepartmentService {
