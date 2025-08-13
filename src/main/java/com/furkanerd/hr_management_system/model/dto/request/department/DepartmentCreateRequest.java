@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 public record DepartmentCreateRequest(
 
         @NotNull
-        @NotEmpty
+        @NotEmpty(message = "Please enter the department name !")
         @Size(max = 100)
         String name,
 
