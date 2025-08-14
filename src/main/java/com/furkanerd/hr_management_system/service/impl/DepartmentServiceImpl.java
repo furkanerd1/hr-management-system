@@ -36,7 +36,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     public DepartmentDetailResponse getDepartmentById(UUID id) {
         Department department = departmentRepository.findById(id)
-                .orElseThrow(() -> new DepartmentNotFoundException("Department not found with id " + id));
+                .orElseThrow(() -> new DepartmentNotFoundException(id));
         return departmentMapper.departmentToDepartmentDetailResponse(department);
     }
 
@@ -55,7 +55,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Transactional
     public DepartmentDetailResponse updateDepartment(UUID departmentId, DepartmentUpdateRequest updateRequest) {
         Department toUpdate = departmentRepository.findById(departmentId)
-                .orElseThrow(() -> new DepartmentNotFoundException("Department not found with id " + departmentId));
+                .orElseThrow(() -> new DepartmentNotFoundException(departmentId));
         toUpdate.setName(updateRequest.name());
         toUpdate.setDescription(updateRequest.description());
         return departmentMapper.departmentToDepartmentDetailResponse(departmentRepository.save(toUpdate));
@@ -66,7 +66,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     public void deleteDepartment(UUID departmentId) {
        boolean exists = departmentRepository.existsById(departmentId);
        if (!exists) {
-           throw new  DepartmentNotFoundException("Department not found with id " + departmentId);
+           throw new  DepartmentNotFoundException(departmentId);
        }
        departmentRepository.deleteById(departmentId);
     }

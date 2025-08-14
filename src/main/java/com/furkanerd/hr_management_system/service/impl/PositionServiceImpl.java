@@ -33,7 +33,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public PositionDetailResponse getPositionById(UUID id) {
         Position position = positionRepository.findById(id)
-                .orElseThrow(() -> new PositionNotFoundException("Position not found with id : " + id));
+                .orElseThrow(() -> new PositionNotFoundException(id));
         return  positionMapper.positionToPositionDetailResponse(position);
     }
 
@@ -49,7 +49,7 @@ public class PositionServiceImpl implements PositionService {
     @Override
     public PositionDetailResponse updatePosition(UUID positionID, PositionUpdateRequest updateRequest) {
         Position toUpdate =  positionRepository.findById(positionID)
-                .orElseThrow(() -> new PositionNotFoundException("Position not found with id : " + positionID));
+                .orElseThrow(() -> new PositionNotFoundException( positionID));
         toUpdate.setTitle(updateRequest.title());
         toUpdate.setDescription(updateRequest.description());
         return   positionMapper.positionToPositionDetailResponse(positionRepository.save(toUpdate));
@@ -59,7 +59,7 @@ public class PositionServiceImpl implements PositionService {
     public void deletePosition(UUID positionID) {
         boolean exists =  positionRepository.existsById(positionID);
         if (!exists) {
-            throw new PositionNotFoundException("Position not found with id : " + positionID);
+            throw new PositionNotFoundException(positionID);
         }
         positionRepository.deleteById(positionID);
     }

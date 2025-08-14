@@ -37,7 +37,7 @@ public class SalaryServiceImpl implements SalaryService {
     public SalaryDetailResponse createSalary(SalaryCreateRequest createRequest) {
         UUID employeeId = createRequest.employeeId();
         Employee employee = employeeRepository.findById(createRequest.employeeId())
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id + "+employeeId));
+                .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
         Salary toCreate = Salary.builder()
                 .employee(employee)
                 .salary(createRequest.salary())
