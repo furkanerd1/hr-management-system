@@ -14,13 +14,13 @@ import java.util.List;
 public interface AttendanceMapper {
 
     @Mapping(target = "employeeId",source = "attendance.employee.id")
-    @Mapping(target = "employeeFullName",source = "java(getFullName(attendance))")
+    @Mapping(target = "employeeFullName",expression = "java(getFullName(attendance))")
     ListAttendanceResponse attendancesToListAttendanceResponse(Attendance attendance);
 
     List<ListAttendanceResponse> attendancesToListAttendanceResponse(List<Attendance> attendances);
 
     @Mapping(target = "employeeId",source = "attendance.employee.id")
-    @Mapping(target = "employeeFullName",source = "java(getFullName(attendance))")
+    @Mapping(target = "employeeFullName",expression = "java(getFullName(attendance))")
     @Mapping(target = "email",source = "attendance.employee.email")
     @Mapping(target = "departmentName",source = "attendance.employee.department.name")
     @Mapping(target = "positionName",source = "attendance.employee.position.title")

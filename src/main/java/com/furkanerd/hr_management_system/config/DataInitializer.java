@@ -1,20 +1,15 @@
 package com.furkanerd.hr_management_system.config;
 
-import com.furkanerd.hr_management_system.model.entity.Department;
-import com.furkanerd.hr_management_system.model.entity.Employee;
-import com.furkanerd.hr_management_system.model.entity.Position;
-import com.furkanerd.hr_management_system.model.entity.Salary;
+import com.furkanerd.hr_management_system.model.entity.*;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
 import com.furkanerd.hr_management_system.model.enums.EmployeeStatusEnum;
-import com.furkanerd.hr_management_system.repository.DepartmentRepository;
-import com.furkanerd.hr_management_system.repository.EmployeeRepository;
-import com.furkanerd.hr_management_system.repository.PositionRepository;
-import com.furkanerd.hr_management_system.repository.SalaryRepository;
+import com.furkanerd.hr_management_system.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Component
@@ -24,12 +19,14 @@ public class DataInitializer implements CommandLineRunner {
     private final PositionRepository positionRepository;
     private final EmployeeRepository employeeRepository;
     private final SalaryRepository salaryRepository;
+    private final AttendanceRepository attendanceRepository;
 
-    public DataInitializer(DepartmentRepository departmentRepository, PositionRepository positionRepository, EmployeeRepository employeeRepository, SalaryRepository salaryRepository) {
+    public DataInitializer(DepartmentRepository departmentRepository, PositionRepository positionRepository, EmployeeRepository employeeRepository, SalaryRepository salaryRepository, AttendanceRepository attendanceRepository) {
         this.departmentRepository = departmentRepository;
         this.positionRepository = positionRepository;
         this.employeeRepository = employeeRepository;
         this.salaryRepository = salaryRepository;
+        this.attendanceRepository = attendanceRepository;
     }
 
 
@@ -131,6 +128,48 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             salaryRepository.saveAll(List.of(salary1, salary2));
+        }
+
+        // Attendances
+        if (attendanceRepository.count() == 0) {
+            Employee emp1 = employeeRepository.findByEmail("ali.veli@example.com")
+                    .orElseThrow(() -> new RuntimeException("Employee Ali Veli not found"));
+            Employee emp2 = employeeRepository.findByEmail("ayse.yilmaz@example.com")
+                    .orElseThrow(() -> new RuntimeException("Employee Ayşe Yılmaz not found"));
+
+            LocalDate today = LocalDate.now();
+            LocalDate yesterday = today.minusDays(1);
+            LocalDate twoDaysAgo = today.minusDays(2);
+
+            Attendance att1 = Attendance.builder()
+                    .employee(emp1)
+                    .date(twoDaysAgo)
+                    .checkInTime(LocalTime.of(9, 0))
+                    .checkOutTime(LocalTime.of(17, 30))
+                    .build();
+
+            Attendance att2 = Attendance.builder()
+                    .employee(emp1)
+                    .date(yesterday)
+                    .checkInTime(LocalTime.of(9, 15))
+                    .checkOutTime(LocalTime.of(17, 45))
+                    .build();
+
+            Attendance att3 = Attendance.builder()
+                    .employee(emp2)
+                    .date(yesterday)
+                    .checkInTime(LocalTime.of(8, 45))
+                    .checkOutTime(LocalTime.of(17, 0))
+                    .build();
+
+            Attendance att4 = Attendance.builder()
+                    .employee(emp2)
+                    .date(today)
+                    .checkInTime(LocalTime.of(9, 5))
+                    .checkOutTime(LocalTime.of(17, 10))
+                    .build();
+
+            attendanceRepository.saveAll(List.of(att1, att2, att3, att4));
         }
     }
 }
