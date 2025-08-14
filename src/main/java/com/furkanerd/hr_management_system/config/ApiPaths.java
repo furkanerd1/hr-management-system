@@ -14,4 +14,7 @@ public class ApiPaths {
 
     // SALARY
     public static final String SALARIES=  API_VERSION+"/salaries";
+
+    // ATTENDANCE
+    public static final String ATTENDANCE =  API_VERSION+"/attendance";
 }

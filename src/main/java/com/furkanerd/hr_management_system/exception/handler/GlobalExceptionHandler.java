@@ -1,8 +1,6 @@
 package com.furkanerd.hr_management_system.exception.handler;
 
-import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
-import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
-import com.furkanerd.hr_management_system.exception.PositionNotFoundException;
+import com.furkanerd.hr_management_system.exception.*;
 import com.furkanerd.hr_management_system.model.dto.response.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -23,6 +21,65 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(InvalidAttendanceTimeException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidAttendanceTime(InvalidAttendanceTimeException e, HttpServletRequest request) {
+        log.error("Invalid attendance time: {}", e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Invalid Attendance Time")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(AlreadyCheckedOutException.class)
+    public ResponseEntity<ErrorResponseDto> handleAlreadyCheckedOut(AlreadyCheckedOutException e, HttpServletRequest request) {
+        log.error("Already checked out: {}", e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Already Checked Out")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(AttendanceNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleAttendanceNotFound(AttendanceNotFoundException e, HttpServletRequest request) {
+        log.error("Attendance not found: {}", e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Attendance Not Found")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    public ResponseEntity<ErrorResponseDto> handleAttendanceAlreadyExists(AttendanceAlreadyExistsException e, HttpServletRequest request) {
+        log.error("Attendance already exists: {}", e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Attendance Already Exists")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
     @ExceptionHandler(EmployeeNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleEmployeeNotFoundException(EmployeeNotFoundException e, HttpServletRequest request) {
         log.error("Employee not found: {}" , e.getMessage());
@@ -30,7 +87,7 @@ public class GlobalExceptionHandler {
         ErrorResponseDto error = ErrorResponseDto.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
-                .error("Not Found")
+                .error("Employee Not Found")
                 .message(e.getMessage())
                 .path(request.getRequestURI())
                 .build();
@@ -39,30 +96,30 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(PositionNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handlePositionNotFoundException(PositionNotFoundException e) {
+    public ResponseEntity<ErrorResponseDto> handlePositionNotFoundException(PositionNotFoundException e,HttpServletRequest request) {
         log.error("Position not found: {}" , e.getMessage());
 
         ErrorResponseDto error = ErrorResponseDto.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
-                .error("Not Found")
+                .error("Position Not Found")
                 .message(e.getMessage())
-                .path("api/v1/positions")
+                .path(request.getRequestURI())
                 .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     @ExceptionHandler(DepartmentNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handleDepartmentNotFoundException(DepartmentNotFoundException e) {
+    public ResponseEntity<ErrorResponseDto> handleDepartmentNotFoundException(DepartmentNotFoundException e,HttpServletRequest request) {
         log.error("Department not found: {}" , e.getMessage());
 
         ErrorResponseDto error = ErrorResponseDto.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
-                .error("Not Found")
+                .error("Department Not Found")
                 .message(e.getMessage())
-                .path("api/v1/departments")
+                .path(request.getRequestURI())
                 .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
