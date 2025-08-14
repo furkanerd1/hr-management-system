@@ -1,8 +1,10 @@
 package com.furkanerd.hr_management_system.exception.handler;
 
 import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
+import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
 import com.furkanerd.hr_management_system.exception.PositionNotFoundException;
 import com.furkanerd.hr_management_system.model.dto.response.ErrorResponseDto;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,21 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleEmployeeNotFoundException(EmployeeNotFoundException e, HttpServletRequest request) {
+        log.error("Employee not found: {}" , e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Not Found")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
 
     @ExceptionHandler(PositionNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlePositionNotFoundException(PositionNotFoundException e) {

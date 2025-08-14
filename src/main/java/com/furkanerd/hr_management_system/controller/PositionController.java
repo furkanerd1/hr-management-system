@@ -36,6 +36,7 @@ public class PositionController {
     }
 
     @PostMapping
+    // TODO: ROLE BASED(HR)
     public ResponseEntity<PositionDetailResponse> createPosition(
             @Valid @RequestBody PositionCreateRequest positionCreateRequest
             ){
@@ -43,6 +44,7 @@ public class PositionController {
     }
 
     @PutMapping(POSITIONS_BY_ID)
+    // TODO: ROLE BASED(HR)
     public ResponseEntity<PositionDetailResponse> updatePosition(
             @PathVariable("id") UUID positionId,
             @Valid @RequestBody PositionUpdateRequest positionUpdateRequest
@@ -51,6 +53,7 @@ public class PositionController {
     }
 
     @DeleteMapping(POSITIONS_BY_ID)
+    // TODO: ROLE BASED(HR)
     public ResponseEntity<Void> deletePosition(@PathVariable("id") UUID positionId) {
         positionService.deletePosition(positionId);
         return ResponseEntity.ok().build();
