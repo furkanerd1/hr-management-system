@@ -14,6 +14,7 @@ import java.util.List;
 public interface SalaryMapper {
 
 
+    @Mapping(target = "employeeId" , source = "salary.employee.id")
     @Mapping(target = "employeeFullName", expression = "java(getFullName(salary))")
     @Mapping(target = "totalSalary", expression = "java(getTotalSalary(salary))")
     ListSalaryResponse salaryToListSalaryResponse(Salary salary);

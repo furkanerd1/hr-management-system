@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record ListSalaryResponse(
         UUID id,
+        UUID employeeId,
         String employeeFullName,
         BigDecimal salary,
         BigDecimal bonus,
