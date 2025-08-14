@@ -11,4 +11,7 @@ public class ApiPaths {
     // POSITIONS
     public static final String  POSITIONS = API_VERSION+"/positions";
     public static final String  POSITIONS_BY_ID = API_VERSION+"/positions/{id}";
+
+    // SALARY
+    public static final String SALARIES=  API_VERSION+"/salaries";
 }
