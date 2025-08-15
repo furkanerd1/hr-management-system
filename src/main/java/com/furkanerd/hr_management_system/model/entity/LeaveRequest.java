@@ -3,16 +3,13 @@ package com.furkanerd.hr_management_system.model.entity;
 import com.furkanerd.hr_management_system.model.enums.LeaveStatusEnum;
 import com.furkanerd.hr_management_system.model.enums.LeaveTypeEnum;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -22,6 +19,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class LeaveRequest {
 
     @Id
@@ -77,5 +75,17 @@ public class LeaveRequest {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void calculateTotalDays() {
+        if (startDate != null && endDate != null) {
+            this.totalDays = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        } else if (startDate != null) {
+            this.totalDays = null;
+        } else {
+            this.totalDays = 0;
+        }
     }
 }

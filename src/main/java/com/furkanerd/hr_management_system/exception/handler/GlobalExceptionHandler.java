@@ -21,6 +21,36 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(LeaveRequestAlreadyProcessedException.class)
+    public ResponseEntity<ErrorResponseDto> handleAlreadyProcessedLeave(LeaveRequestAlreadyProcessedException e, HttpServletRequest request) {
+        log.error("Leave request already processed: {}", e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Leave Request Already Processed")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(LeaveRequestNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleLeaveRequestNotFound(LeaveRequestNotFoundException e, HttpServletRequest request) {
+        log.error("Leave request not found: {}", e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Leave Request Not Found")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
     @ExceptionHandler(InvalidAttendanceTimeException.class)
     public ResponseEntity<ErrorResponseDto> handleInvalidAttendanceTime(InvalidAttendanceTimeException e, HttpServletRequest request) {
         log.error("Invalid attendance time: {}", e.getMessage());
@@ -66,6 +96,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(AttendanceAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDto> handleAttendanceAlreadyExists(AttendanceAlreadyExistsException e, HttpServletRequest request) {
         log.error("Attendance already exists: {}", e.getMessage());
 

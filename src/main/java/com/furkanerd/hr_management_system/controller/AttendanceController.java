@@ -62,6 +62,7 @@ public class AttendanceController {
     }
 
     @PostMapping("/check-in")
+    // TODO: securıty context ıd
     @Operation(
             summary = "Check-in for today",
             description = "Automatically registers check-in for the employee. Restricted to the employee themselves.",
@@ -73,6 +74,7 @@ public class AttendanceController {
             }
     )
     // TODO: ROLE BASED(SELF)
+    // TODO: securıty context ıd
     public ResponseEntity<AttendanceDetailResponse> checkIn(@RequestParam UUID employeeId) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(attendanceService.autoCheckIn(employeeId));
@@ -90,6 +92,7 @@ public class AttendanceController {
     )
     @PostMapping("/check-out")
     // TODO: ROLE BASED(SELF)
+    // TODO: securıty context ıd
     public ResponseEntity<AttendanceDetailResponse> checkOut(@RequestParam UUID employeeId) {
         return ResponseEntity.ok(attendanceService.autoCheckOut(employeeId));
     }
