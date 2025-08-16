@@ -69,6 +69,9 @@ public class Employee {
     @Column(nullable = false)
     private EmployeeStatusEnum status;
 
+    @Column(name = "must_change_password", nullable = false)
+    private boolean mustChangePassword = true;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

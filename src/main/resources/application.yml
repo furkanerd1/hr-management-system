@@ -24,3 +24,11 @@ logging:
     org.hibernate.sql: debug
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.context: debug
+    org.springframework.security: debug
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+
+default:
+  password: ${DEFAULT_PASSWORD}

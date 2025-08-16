@@ -22,4 +22,7 @@ public class ApiPaths {
     public static final String LEAVES=  API_VERSION+"/leaves";
     public static final String LEAVES_BY_ID = API_VERSION+"/leaves/{id}";
     public static final String LEAVES_APPROVE = LEAVES_BY_ID+"/approve";
+
+    //AUTH
+    public static final String AUTH= API_VERSION+"/auth";;
 }

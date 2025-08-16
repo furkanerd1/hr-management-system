@@ -4,7 +4,9 @@ import com.furkanerd.hr_management_system.model.entity.*;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
 import com.furkanerd.hr_management_system.model.enums.EmployeeStatusEnum;
 import com.furkanerd.hr_management_system.repository.*;
+import com.furkanerd.hr_management_system.security.JwtUtil;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -20,13 +22,15 @@ public class DataInitializer implements CommandLineRunner {
     private final EmployeeRepository employeeRepository;
     private final SalaryRepository salaryRepository;
     private final AttendanceRepository attendanceRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public DataInitializer(DepartmentRepository departmentRepository, PositionRepository positionRepository, EmployeeRepository employeeRepository, SalaryRepository salaryRepository, AttendanceRepository attendanceRepository) {
+    public DataInitializer(DepartmentRepository departmentRepository, PositionRepository positionRepository, EmployeeRepository employeeRepository, SalaryRepository salaryRepository, AttendanceRepository attendanceRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.departmentRepository = departmentRepository;
         this.positionRepository = positionRepository;
         this.employeeRepository = employeeRepository;
         this.salaryRepository = salaryRepository;
         this.attendanceRepository = attendanceRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -72,31 +76,44 @@ public class DataInitializer implements CommandLineRunner {
             Department defaultDept = departmentRepository.findByName("IT")
                     .orElseThrow(() -> new RuntimeException("Default department not found"));
 
+            Department defaultDept2 = departmentRepository.findByName("HR")
+                    .orElseThrow(() -> new RuntimeException("Default department not found"));
+
             Position software = positionRepository.findByTitle("Software Engineer")
                     .orElseThrow(() -> new RuntimeException("Software Engineer position not found"));
 
             Position qaEngineer = positionRepository.findByTitle("QA Engineer")
                     .orElseThrow(() -> new RuntimeException("QA Engineer position not found"));
 
+            Position pm  = positionRepository.findByTitle("Project Manager")
+                    .orElseThrow(() -> new RuntimeException("Project Manager not found"));
+
+            String hrPassword = passwordEncoder.encode("hrPass123");
             Employee emp1 = Employee.builder()
                     .firstName("Ali")
                     .lastName("Veli")
                     .email("ali.veli@example.com")
+                    .password(hrPassword)
+                    .phone("+905555555555")
                     .hireDate(LocalDate.of(2023, 1, 1))
                     .birthDate(LocalDate.of(1990, 5, 5))
-                    .role(EmployeeRoleEnum.EMPLOYEE)
+                    .address("Ankara,Türkiye")
+                    .role(EmployeeRoleEnum.HR)
                     .status(EmployeeStatusEnum.ACTIVE)
-                    .department(defaultDept)
-                    .position(software)
+                    .department(defaultDept2)
+                    .position(pm)
                     .build();
 
+            String employeePassword = passwordEncoder.encode("employeePass123");
             Employee emp2 = Employee.builder()
                     .firstName("Ayşe")
                     .lastName("Yılmaz")
                     .email("ayse.yilmaz@example.com")
+                    .password(hrPassword)
+                    .phone("+905555555535")
                     .hireDate(LocalDate.of(2022, 3, 15))
                     .birthDate(LocalDate.of(1992, 8, 20))
-                    .role(EmployeeRoleEnum.MANAGER)
+                    .role(EmployeeRoleEnum.EMPLOYEE)
                     .status(EmployeeStatusEnum.ACTIVE)
                     .department(defaultDept)
                     .position(qaEngineer)
