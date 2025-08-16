@@ -10,6 +10,7 @@ import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.repository.PositionRepository;
 import com.furkanerd.hr_management_system.service.PositionService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,7 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
+    @Transactional
     public PositionDetailResponse createPosition(PositionCreateRequest createRequest) {
         Position toCreate = Position.builder()
                 .title(createRequest.title())
@@ -47,6 +49,7 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
+    @Transactional
     public PositionDetailResponse updatePosition(UUID positionID, PositionUpdateRequest updateRequest) {
         Position toUpdate =  positionRepository.findById(positionID)
                 .orElseThrow(() -> new PositionNotFoundException( positionID));
@@ -56,6 +59,7 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
+    @Transactional
     public void deletePosition(UUID positionID) {
         boolean exists =  positionRepository.existsById(positionID);
         if (!exists) {

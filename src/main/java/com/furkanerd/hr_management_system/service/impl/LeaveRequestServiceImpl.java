@@ -15,6 +15,7 @@ import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.repository.LeaveRequestRepository;
 import com.furkanerd.hr_management_system.service.LeaveRequestService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
+    @Transactional
     // TODO : get one more parameter "UserPrincipal currentUser"
     public LeaveRequestDetailResponse createLeaveRequest(LeaveRequestCreateRequest createRequest ) {
         // Temporary - Ali's ID
@@ -60,6 +62,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
+    @Transactional
     public LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId, LeaveRequestUpdateRequest updateRequest, Employee approver) {
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)

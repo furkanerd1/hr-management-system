@@ -11,6 +11,7 @@ import com.furkanerd.hr_management_system.repository.AttendanceRepository;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.service.AttendanceService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -36,6 +37,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
+    @Transactional
     public AttendanceDetailResponse createAttendance(AttendanceCreateRequest createRequest) {
         Employee employee = employeeRepository.findById(createRequest.employeeId())
                 .orElseThrow(() -> new EmployeeNotFoundException(createRequest.employeeId()));
@@ -59,6 +61,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
+    @Transactional
     public AttendanceDetailResponse autoCheckIn(UUID employeeId) {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
@@ -81,6 +84,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 
     @Override
+    @Transactional
     public AttendanceDetailResponse autoCheckOut(UUID employeeId) {
         LocalDate today = LocalDate.now();
         Attendance attendance = attendanceRepository.findByEmployeeIdAndDate(employeeId, today)

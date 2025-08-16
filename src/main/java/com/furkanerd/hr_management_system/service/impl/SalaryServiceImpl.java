@@ -11,6 +11,7 @@ import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.repository.SalaryRepository;
 import com.furkanerd.hr_management_system.service.SalaryService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +35,7 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
+    @Transactional
     public SalaryDetailResponse createSalary(SalaryCreateRequest createRequest) {
         UUID employeeId = createRequest.employeeId();
         Employee employee = employeeRepository.findById(createRequest.employeeId())
