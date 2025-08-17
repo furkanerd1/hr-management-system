@@ -1,6 +1,6 @@
 package com.furkanerd.hr_management_system.service.impl;
 
-import com.furkanerd.hr_management_system.exception.ResourceNotFoundException;
+import com.furkanerd.hr_management_system.exception.*;
 import com.furkanerd.hr_management_system.model.dto.request.LoginRequest;
 import com.furkanerd.hr_management_system.model.dto.request.RegisterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.LoginResponse;
@@ -41,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
     private final DepartmentRepository departmentRepository;
     private final PositionRepository positionRepository;
 
-    @Value("${default.password")
+    @Value("${default.password}")
     private String defaultPassword;
 
     public AuthServiceImpl(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, PositionRepository positionRepository) {
@@ -94,13 +94,13 @@ public class AuthServiceImpl implements AuthService {
     public RegisterResponse register(RegisterRequest registerRequest){
 
         if (employeeRepository.existsByEmail(registerRequest.email())){
-            throw new RuntimeException("Email already exists: "+ registerRequest.email());
+            throw new EmailAlreadyExistsException("Email already exists: "+ registerRequest.email());
         }
 
         if(registerRequest.phone() != null &&
                 !registerRequest.phone().trim().isEmpty() &&
                 employeeRepository.existsByPhone(registerRequest.phone())){
-            throw new RuntimeException("Phone number already exists: "+ registerRequest.phone());
+            throw new PhoneNumberAlreadyExistsException("Phone number already exists: "+ registerRequest.phone());
         }
 
         // Set the default password for the first time
@@ -118,6 +118,7 @@ public class AuthServiceImpl implements AuthService {
                 .address(registerRequest.address())
                 .role(registerRequest.role())
                 .status(registerRequest.status())
+                .mustChangePassword(true)
                 .build();
 
         // Set Department
@@ -140,7 +141,7 @@ public class AuthServiceImpl implements AuthService {
                     .orElseThrow(() -> new ResourceNotFoundException("Manager not found with id: " + registerRequest.managerId()));
 
             if (manager.getRole() != EmployeeRoleEnum.MANAGER) {
-                throw new RuntimeException("Selected manager must have MANAGER");
+                throw new InvalidRoleException("Selected manager must have MANAGER");
             }
 
             employee.setManager(manager);
@@ -164,7 +165,7 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         if (!passwordEncoder.matches(oldPassword, employee.getPassword())) {
-            throw new RuntimeException("Invalid current password");
+            throw new IncorrectPasswordException("Invalid current password");
         }
 
         employee.setPassword(passwordEncoder.encode(newPassword));
