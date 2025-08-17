@@ -43,6 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }catch(Exception e) {
                 logger.error("Jwt token parsing error : " + e.getMessage());
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
         }
 

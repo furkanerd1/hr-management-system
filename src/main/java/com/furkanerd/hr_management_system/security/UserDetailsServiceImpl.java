@@ -1,6 +1,5 @@
 package com.furkanerd.hr_management_system.security;
 
-import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import org.springframework.security.core.userdetails.User;
