@@ -4,7 +4,6 @@ import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRe
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
-import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.service.LeaveRequestService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -41,7 +40,7 @@ public class LeaveRequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(leaveRequestService.createLeaveRequest(createRequest));
     }
 
-    @PatchMapping(LEAVES_APPROVE)
+    @PatchMapping("/{id}/approve")
     // TODO : ROLE BASED(HR,MANAGER)
     // TODO : +param = @AuthenticationPrincipal UserPrincipal currentUser
     public ResponseEntity<LeaveRequestDetailResponse> approveLeaveRequest(

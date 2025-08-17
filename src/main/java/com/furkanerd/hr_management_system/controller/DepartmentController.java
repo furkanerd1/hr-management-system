@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.furkanerd.hr_management_system.config.ApiPaths.DEPARTMENTS;
-import static com.furkanerd.hr_management_system.config.ApiPaths.DEPARTMENTS_BY_ID;
 
 @RestController
 @RequestMapping(DEPARTMENTS)
@@ -30,7 +29,7 @@ public class DepartmentController {
         return ResponseEntity.ok(departmentService.listAllDepartments());
     }
 
-    @GetMapping(DEPARTMENTS_BY_ID)
+    @GetMapping("/{id}")
     public ResponseEntity<DepartmentDetailResponse> getDepartmentById(@PathVariable("id") UUID departmentId) {
         return ResponseEntity.ok(departmentService.getDepartmentById(departmentId));
     }
@@ -42,7 +41,7 @@ public class DepartmentController {
         return  ResponseEntity.ok(departmentService.createDepartment(departmentCreateRequest));
     }
 
-    @PutMapping(DEPARTMENTS_BY_ID)
+    @PutMapping("/{id}")
     //TODO : Role based ( HR)
     public ResponseEntity<DepartmentDetailResponse> updateDepartment(
             @PathVariable("id") UUID departmentId ,
@@ -50,7 +49,7 @@ public class DepartmentController {
         return ResponseEntity.ok(departmentService.updateDepartment(departmentId, departmentUpdateRequest));
     }
 
-    @DeleteMapping(DEPARTMENTS_BY_ID)
+    @DeleteMapping("/{id}")
     //TODO : Role based ( HR)
     public ResponseEntity<Void> deleteDepartment(
             @PathVariable("id") UUID departmentId){

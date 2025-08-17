@@ -30,7 +30,7 @@ public class PositionController {
         return ResponseEntity.ok(positionService.listAllPositions());
     }
 
-    @GetMapping(POSITIONS_BY_ID)
+    @GetMapping("/{id}")
     public ResponseEntity<PositionDetailResponse> getPositionById(@PathVariable("id") UUID positionId) {
         return ResponseEntity.ok(positionService.getPositionById(positionId));
     }
@@ -43,7 +43,7 @@ public class PositionController {
         return ResponseEntity.ok(positionService.createPosition(positionCreateRequest));
     }
 
-    @PutMapping(POSITIONS_BY_ID)
+    @PutMapping("/{id}")
     // TODO: ROLE BASED(HR)
     public ResponseEntity<PositionDetailResponse> updatePosition(
             @PathVariable("id") UUID positionId,
@@ -52,7 +52,7 @@ public class PositionController {
         return  ResponseEntity.ok(positionService.updatePosition(positionId, positionUpdateRequest));
     }
 
-    @DeleteMapping(POSITIONS_BY_ID)
+    @DeleteMapping("/{id}")
     // TODO: ROLE BASED(HR)
     public ResponseEntity<Void> deletePosition(@PathVariable("id") UUID positionId) {
         positionService.deletePosition(positionId);
