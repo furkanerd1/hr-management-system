@@ -4,8 +4,6 @@ import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRe
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
-import com.furkanerd.hr_management_system.model.entity.Employee;
-import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.service.LeaveRequestService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,12 +27,9 @@ import static com.furkanerd.hr_management_system.config.ApiPaths.*;
 public class LeaveRequestController {
 
     private final LeaveRequestService leaveRequestService;
-    // temp
-    private final EmployeeRepository employeeRepository;
 
-    public LeaveRequestController(LeaveRequestService leaveRequestService, EmployeeRepository employeeRepository) {
+    public LeaveRequestController(LeaveRequestService leaveRequestService) {
         this.leaveRequestService = leaveRequestService;
-        this.employeeRepository = employeeRepository;
     }
 
     @Operation(summary = "Get all leave requests",
@@ -50,9 +45,11 @@ public class LeaveRequestController {
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
     public ResponseEntity<LeaveRequestDetailResponse> createLeaveRequest(
-            @Valid @RequestBody LeaveRequestCreateRequest createRequest
+            @Valid @RequestBody LeaveRequestCreateRequest createRequest,
+            @AuthenticationPrincipal UserDetails currentUser
     ){
-        return ResponseEntity.status(HttpStatus.CREATED).body(leaveRequestService.createLeaveRequest(createRequest));
+        String requester = currentUser.getUsername();
+        return ResponseEntity.status(HttpStatus.CREATED).body(leaveRequestService.createLeaveRequest(createRequest,requester));
     }
 
     @Operation(summary = "Approve a leave request",
@@ -67,10 +64,7 @@ public class LeaveRequestController {
 
         String approverEmail = currentUser.getUsername();
 
-        // todo: Do it with service
-        Employee approver = employeeRepository.findByEmail(approverEmail).orElseThrow();
-
-        LeaveRequestDetailResponse response = leaveRequestService.approveLeaveRequest(leaveRequestId,leaveRequestUpdateRequest,approver);
+        LeaveRequestDetailResponse response = leaveRequestService.approveLeaveRequest(leaveRequestId,leaveRequestUpdateRequest,approverEmail);
 
         return ResponseEntity.ok(response);
     }

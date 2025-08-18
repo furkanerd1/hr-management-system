@@ -1,6 +1,5 @@
 package com.furkanerd.hr_management_system.service.impl;
 
-import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
 import com.furkanerd.hr_management_system.exception.LeaveRequestAlreadyProcessedException;
 import com.furkanerd.hr_management_system.exception.LeaveRequestNotFoundException;
 import com.furkanerd.hr_management_system.mapper.LeaveRequestMapper;
@@ -11,8 +10,8 @@ import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLe
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.LeaveRequest;
 import com.furkanerd.hr_management_system.model.enums.LeaveStatusEnum;
-import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.repository.LeaveRequestRepository;
+import com.furkanerd.hr_management_system.service.EmployeeService;
 import com.furkanerd.hr_management_system.service.LeaveRequestService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,13 +25,13 @@ import java.util.UUID;
 public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     private final LeaveRequestRepository leaveRequestRepository;
-    private final EmployeeRepository employeeRepository;
     private final LeaveRequestMapper leaveRequestMapper;
+    private final EmployeeService employeeService;
 
-    public LeaveRequestServiceImpl(LeaveRequestRepository leaveRequestRepository, EmployeeRepository employeeRepository, LeaveRequestMapper leaveRequestMapper) {
+    public LeaveRequestServiceImpl(LeaveRequestRepository leaveRequestRepository,LeaveRequestMapper leaveRequestMapper, EmployeeService employeeService) {
         this.leaveRequestRepository = leaveRequestRepository;
-        this.employeeRepository = employeeRepository;
         this.leaveRequestMapper = leaveRequestMapper;
+        this.employeeService = employeeService;
     }
 
     @Override
@@ -42,12 +41,9 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     @Transactional
-    // TODO : get one more parameter "UserPrincipal currentUser"
-    public LeaveRequestDetailResponse createLeaveRequest(LeaveRequestCreateRequest createRequest ) {
-        // Temporary - Ali's ID
-        UUID uuid = UUID.fromString("3a58a1ad-e146-4248-8c7c-6cd7e7364f57");
-        Employee employee = employeeRepository.findById(uuid)
-                .orElseThrow(()-> new EmployeeNotFoundException(uuid));
+    public LeaveRequestDetailResponse createLeaveRequest(LeaveRequestCreateRequest createRequest , String email) {
+
+        Employee employee = employeeService.getEmployeeByEmail(email);
 
         LeaveRequest toCreate = LeaveRequest.builder()
                 .employee(employee)
@@ -63,12 +59,15 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     @Transactional
-    public LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId, LeaveRequestUpdateRequest updateRequest, Employee approver) {
+    public LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId, LeaveRequestUpdateRequest updateRequest, String approverEmail) {
+
+
+        Employee approver = employeeService.getEmployeeByEmail(approverEmail);
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
-                .orElseThrow(() -> new LeaveRequestNotFoundException(""));
+                .orElseThrow(() -> new LeaveRequestNotFoundException("Leave request not found: " + leaveRequestId));
 
-        if(leaveRequest.getStatus() != LeaveStatusEnum.PENDING) {
+        if(!leaveRequest.getStatus().equals(LeaveStatusEnum.PENDING)) {
             throw new LeaveRequestAlreadyProcessedException(leaveRequestId,leaveRequest.getStatus());
         }
 

@@ -18,4 +18,8 @@ public class EmployeeNotFoundException extends RuntimeException {
     public EmployeeNotFoundException(UUID employeeId) {
         super("Employee note found with id: "+ employeeId);
     }
+
+    public EmployeeNotFoundException(String email) {
+        super("Employee note found with email : "+ email);
+    }
 }
