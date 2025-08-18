@@ -8,27 +8,26 @@ import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAtte
 import com.furkanerd.hr_management_system.model.entity.Attendance;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.AttendanceRepository;
-import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.service.AttendanceService;
+import com.furkanerd.hr_management_system.service.EmployeeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
-    private final EmployeeRepository employeeRepository;
     private final AttendanceMapper attendanceMapper;
+    private final EmployeeService employeeService;
 
-    public AttendanceServiceImpl(AttendanceRepository attendanceRepository, EmployeeRepository employeeRepository, AttendanceMapper attendanceMapper) {
+    public AttendanceServiceImpl(AttendanceRepository attendanceRepository, AttendanceMapper attendanceMapper, EmployeeService employeeService) {
         this.attendanceRepository = attendanceRepository;
-        this.employeeRepository = employeeRepository;
         this.attendanceMapper = attendanceMapper;
+        this.employeeService = employeeService;
     }
 
     @Override
@@ -39,8 +38,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional
     public AttendanceDetailResponse createAttendance(AttendanceCreateRequest createRequest) {
-        Employee employee = employeeRepository.findById(createRequest.employeeId())
-                .orElseThrow(() -> new EmployeeNotFoundException(createRequest.employeeId()));
+        Employee employee = employeeService.getEmployeeEntityById(createRequest.employeeId());
 
         if (attendanceRepository.existsByEmployeeIdAndDate(createRequest.employeeId(),createRequest.date())){
             throw new AttendanceAlreadyExistsException(createRequest.employeeId(), createRequest.date());
@@ -62,15 +60,14 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional
-    public AttendanceDetailResponse autoCheckIn(UUID employeeId) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new EmployeeNotFoundException(employeeId));
+    public AttendanceDetailResponse autoCheckIn(String employeeEmail) {
+        Employee employee = employeeService.getEmployeeEntityByEmail(employeeEmail);
 
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
 
-        if (attendanceRepository.existsByEmployeeIdAndDate(employeeId, today)) {
-            throw new AttendanceAlreadyExistsException(employeeId, today);
+        if (attendanceRepository.existsByEmployeeIdAndDate(employee.getId(), today)) {
+            throw new AttendanceAlreadyExistsException(employee.getId(), today);
         }
 
         Attendance attendance = Attendance.builder()
@@ -85,10 +82,11 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional
-    public AttendanceDetailResponse autoCheckOut(UUID employeeId) {
+    public AttendanceDetailResponse autoCheckOut(String employeeEmail) {
+        Employee employee =  employeeService.getEmployeeEntityByEmail(employeeEmail);
         LocalDate today = LocalDate.now();
-        Attendance attendance = attendanceRepository.findByEmployeeIdAndDate(employeeId, today)
-                .orElseThrow(() -> new AttendanceNotFoundException("No attendance found for today " + employeeId));
+        Attendance attendance = attendanceRepository.findByEmployeeIdAndDate(employee.getId(), today)
+                .orElseThrow(() -> new AttendanceNotFoundException("No attendance found for today " + employee.getId()));
 
         LocalTime now = LocalTime.now();
 
@@ -102,6 +100,15 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         attendance.setCheckOutTime(now);
         return attendanceMapper.attendanceToAttendanceDetailResponse(attendanceRepository.save(attendance));
+
+    }
+
+    @Override
+    public List<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail) {
+
+        Employee employee = employeeService.getEmployeeEntityByEmail(employeeEmail);
+
+        return attendanceMapper.attendancesToListAttendanceResponse(attendanceRepository.findAllByEmployeeId(employee.getId()));
 
     }
 }

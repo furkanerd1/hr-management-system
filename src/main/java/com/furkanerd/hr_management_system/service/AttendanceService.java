@@ -5,7 +5,6 @@ import com.furkanerd.hr_management_system.model.dto.response.attendance.Attendan
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface AttendanceService {
 
@@ -13,7 +12,9 @@ public interface AttendanceService {
 
     AttendanceDetailResponse createAttendance(AttendanceCreateRequest createRequest);
 
-    AttendanceDetailResponse autoCheckIn(UUID employeeId);
+    AttendanceDetailResponse autoCheckIn(String employeeEmail);
 
-    AttendanceDetailResponse autoCheckOut(UUID employeeId);
+    AttendanceDetailResponse autoCheckOut(String employeeEmail);
+
+    List<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail);
 }

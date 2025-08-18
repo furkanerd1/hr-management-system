@@ -12,10 +12,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 import static com.furkanerd.hr_management_system.config.ApiPaths.ATTENDANCE;
 
@@ -38,6 +40,7 @@ public class AttendanceController {
             }
     )
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<List<ListAttendanceResponse>> getAttendance(){
         return ResponseEntity.ok(attendanceService.listAllAttendance());
     }
@@ -54,15 +57,13 @@ public class AttendanceController {
             }
     )
     @PostMapping("/manual")
-    // TODO: ROLE BASED(HR,MANAGER)
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<AttendanceDetailResponse> createAttendance(
             @Valid @RequestBody AttendanceCreateRequest attendanceCreateRequest
     ){
         return ResponseEntity.status(HttpStatus.CREATED).body(attendanceService.createAttendance(attendanceCreateRequest));
     }
 
-    @PostMapping("/check-in")
-    // TODO: securıty context ıd
     @Operation(
             summary = "Check-in for today",
             description = "Automatically registers check-in for the employee. Restricted to the employee themselves.",
@@ -73,11 +74,12 @@ public class AttendanceController {
                     @ApiResponse(responseCode = "409", description = "Attendance already exists for today")
             }
     )
-    // TODO: ROLE BASED(SELF)
-    // TODO: securıty context ıd
-    public ResponseEntity<AttendanceDetailResponse> checkIn(@RequestParam UUID employeeId) {
+    @PostMapping("/check-in")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
+    public ResponseEntity<AttendanceDetailResponse> checkIn(@AuthenticationPrincipal UserDetails currentUser) {
+        String employeeEmail =  currentUser.getUsername();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(attendanceService.autoCheckIn(employeeId));
+                .body(attendanceService.autoCheckIn(employeeEmail));
     }
 
     @Operation(
@@ -91,10 +93,29 @@ public class AttendanceController {
             }
     )
     @PostMapping("/check-out")
-    // TODO: ROLE BASED(SELF)
-    // TODO: securıty context ıd
-    public ResponseEntity<AttendanceDetailResponse> checkOut(@RequestParam UUID employeeId) {
-        return ResponseEntity.ok(attendanceService.autoCheckOut(employeeId));
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
+    public ResponseEntity<AttendanceDetailResponse> checkOut(@AuthenticationPrincipal UserDetails currentUser) {
+        String employeeEmail =  currentUser.getUsername();
+        return ResponseEntity.ok(attendanceService.autoCheckOut(employeeEmail));
     }
+
+
+    @Operation(
+            summary = "Get my attendance records",
+            description = "Returns attendance records for the authenticated employee.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Successfully retrieved attendances",
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = ListAttendanceResponse.class))))
+            }
+    )
+    @GetMapping("/my-attendance")
+    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
+    public ResponseEntity<List<ListAttendanceResponse>> getMyAttendance(
+            @AuthenticationPrincipal UserDetails currentUser
+    ) {
+        String employeeEmail = currentUser.getUsername();
+        return ResponseEntity.ok(attendanceService.getAttendanceByEmployee(employeeEmail));
+    }
+
 
 }
