@@ -18,14 +18,24 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Employee getEmployeeByEmail(String email) {
+    public Employee getEmployeeEntityByEmail(String email) {
         return employeeRepository.findByEmail(email)
                 .orElseThrow(() -> new EmployeeNotFoundException(email));
     }
 
     @Override
-    public Employee getEmployeeById(UUID id) {
+    public Employee getEmployeeEntityById(UUID id) {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
+    }
+
+    @Override
+    public boolean emailExists(String email) {
+        return employeeRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean phoneExists(String phone) {
+        return employeeRepository.existsByPhone(phone);
     }
 }

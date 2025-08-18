@@ -67,4 +67,10 @@ public class PositionServiceImpl implements PositionService {
         }
         positionRepository.deleteById(positionID);
     }
+
+    @Override
+    public Position getPositionEntityById(UUID positionId) {
+        return positionRepository.findById(positionId)
+                .orElseThrow(() -> new PositionNotFoundException(positionId));
+    }
 }

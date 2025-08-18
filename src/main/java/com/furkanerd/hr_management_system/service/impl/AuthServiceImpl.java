@@ -9,11 +9,11 @@ import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
-import com.furkanerd.hr_management_system.repository.DepartmentRepository;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
-import com.furkanerd.hr_management_system.repository.PositionRepository;
 import com.furkanerd.hr_management_system.security.JwtUtil;
 import com.furkanerd.hr_management_system.service.AuthService;
+import com.furkanerd.hr_management_system.service.DepartmentService;
+import com.furkanerd.hr_management_system.service.PositionService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -38,20 +38,20 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmployeeRepository employeeRepository;
-    private final DepartmentRepository departmentRepository;
-    private final PositionRepository positionRepository;
+    private final DepartmentService departmentService;
+    private final PositionService positionService;
 
     @Value("${default.password}")
     private String defaultPassword;
 
-    public AuthServiceImpl(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, PositionRepository positionRepository) {
+    public AuthServiceImpl(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmployeeRepository employeeRepository,DepartmentService departmentService, PositionService positionService) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.employeeRepository = employeeRepository;
-        this.departmentRepository = departmentRepository;
-        this.positionRepository = positionRepository;
+        this.departmentService = departmentService;
+        this.positionService = positionService;
     }
 
     @Override
@@ -123,15 +123,13 @@ public class AuthServiceImpl implements AuthService {
 
         // Set Department
         if (registerRequest.departmentId() != null) {
-            Department department = departmentRepository.findById(registerRequest.departmentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + registerRequest.departmentId()));
+            Department department = departmentService.getDepartmentEntityById(registerRequest.departmentId());
             employee.setDepartment(department);
         }
 
         // Set position
         if (registerRequest.positionId() != null) {
-            Position position = positionRepository.findById(registerRequest.positionId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Position not found with id: " + registerRequest.positionId()));
+            Position position = positionService.getPositionEntityById(registerRequest.positionId());
             employee.setPosition(position);
         }
 

@@ -70,4 +70,10 @@ public class DepartmentServiceImpl implements DepartmentService {
        }
        departmentRepository.deleteById(departmentId);
     }
+
+    @Override
+    public Department getDepartmentEntityById(UUID departmentId) {
+        return departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new DepartmentNotFoundException(departmentId));
+    }
 }

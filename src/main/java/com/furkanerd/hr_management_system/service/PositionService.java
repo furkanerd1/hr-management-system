@@ -4,6 +4,7 @@ import com.furkanerd.hr_management_system.model.dto.request.position.PositionCre
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.position.ListPositionResponse;
 import com.furkanerd.hr_management_system.model.dto.response.position.PositionDetailResponse;
+import com.furkanerd.hr_management_system.model.entity.Position;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,5 +20,7 @@ public interface PositionService {
     PositionDetailResponse updatePosition(UUID positionID, PositionUpdateRequest updateRequest);
 
     void deletePosition(UUID positionID);
+
+    Position getPositionEntityById(UUID positionId);
 
 }

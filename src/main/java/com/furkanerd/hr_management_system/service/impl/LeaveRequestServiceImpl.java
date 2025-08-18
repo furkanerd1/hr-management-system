@@ -43,7 +43,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Transactional
     public LeaveRequestDetailResponse createLeaveRequest(LeaveRequestCreateRequest createRequest , String email) {
 
-        Employee employee = employeeService.getEmployeeByEmail(email);
+        Employee employee = employeeService.getEmployeeEntityByEmail(email);
 
         LeaveRequest toCreate = LeaveRequest.builder()
                 .employee(employee)
@@ -62,7 +62,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     public LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId, LeaveRequestUpdateRequest updateRequest, String approverEmail) {
 
 
-        Employee approver = employeeService.getEmployeeByEmail(approverEmail);
+        Employee approver = employeeService.getEmployeeEntityByEmail(approverEmail);
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new LeaveRequestNotFoundException("Leave request not found: " + leaveRequestId));

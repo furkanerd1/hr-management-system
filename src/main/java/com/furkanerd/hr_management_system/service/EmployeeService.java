@@ -6,7 +6,11 @@ import java.util.UUID;
 
 public interface EmployeeService {
 
-    Employee getEmployeeByEmail(String email);
+    Employee getEmployeeEntityByEmail(String email);
 
-    Employee getEmployeeById(UUID id);
+    Employee getEmployeeEntityById(UUID id);
+
+    boolean emailExists(String email);
+
+    boolean phoneExists(String phone);
 }
