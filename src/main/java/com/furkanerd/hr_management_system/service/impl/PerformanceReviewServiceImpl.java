@@ -13,6 +13,7 @@ import com.furkanerd.hr_management_system.repository.PerformanceReviewRepository
 import com.furkanerd.hr_management_system.service.EmployeeService;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,6 +47,7 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
 
     @Override
+    @Transactional
     public PerformanceReviewDetailResponse createPerformanceReview(PerformanceReviewCreateRequest createRequest, String email) {
 
         Employee employee = employeeService.getEmployeeEntityById(createRequest.employeeId());
