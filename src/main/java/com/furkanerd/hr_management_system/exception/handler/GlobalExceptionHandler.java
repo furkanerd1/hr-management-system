@@ -24,6 +24,19 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(UnauthorizedActionException.class)
+    public ResponseEntity<ErrorResponseDto> handleUnauthorizedAction(UnauthorizedActionException e, HttpServletRequest request) {
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error("Forbidden")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
     @ExceptionHandler(PerformanceReviewNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handlePerformanceReviewNotFoundException(PerformanceReviewNotFoundException e, HttpServletRequest request) {
         log.error("Performance Review not found: {}" , e.getMessage());
