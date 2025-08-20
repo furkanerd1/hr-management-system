@@ -66,6 +66,14 @@ public class AttendanceServiceImpl implements AttendanceService {
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
 
+        if (!isValidCheckInTime(now)) {
+            throw new InvalidAttendanceTimeException("Check-in time must be between 06:00 and 10:00");
+        }
+
+        if (attendanceRepository.existsByEmployeeIdAndDate(employee.getId(), today)) {
+            throw new AttendanceAlreadyExistsException(employee.getId(), today);
+        }
+
         if (attendanceRepository.existsByEmployeeIdAndDate(employee.getId(), today)) {
             throw new AttendanceAlreadyExistsException(employee.getId(), today);
         }
@@ -110,5 +118,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         return attendanceMapper.attendancesToListAttendanceResponse(attendanceRepository.findAllByEmployeeId(employee.getId()));
 
+    }
+
+    private boolean isValidCheckInTime(LocalTime time) {
+        return time.isAfter(LocalTime.of(6, 0)) && time.isBefore(LocalTime.of(10, 0));
     }
 }
