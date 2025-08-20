@@ -72,7 +72,6 @@ public class DataInitializer implements CommandLineRunner {
 
         // Employees
         if (employeeRepository.count() == 0) {
-            // Department ve Position referanslarını DB’den alıyoruz
             Department defaultDept = departmentRepository.findByName("IT")
                     .orElseThrow(() -> new RuntimeException("Default department not found"));
 
@@ -100,6 +99,7 @@ public class DataInitializer implements CommandLineRunner {
                     .address("Ankara,Türkiye")
                     .role(EmployeeRoleEnum.HR)
                     .status(EmployeeStatusEnum.ACTIVE)
+                    .mustChangePassword(false) // EKLENEN
                     .department(defaultDept2)
                     .position(pm)
                     .build();
@@ -109,17 +109,35 @@ public class DataInitializer implements CommandLineRunner {
                     .firstName("Ayşe")
                     .lastName("Yılmaz")
                     .email("ayse.yilmaz@example.com")
-                    .password(hrPassword)
+                    .password(employeePassword) // DÜZELTME: hrPassword yerine employeePassword
                     .phone("+905555555535")
                     .hireDate(LocalDate.of(2022, 3, 15))
                     .birthDate(LocalDate.of(1992, 8, 20))
                     .role(EmployeeRoleEnum.EMPLOYEE)
                     .status(EmployeeStatusEnum.ACTIVE)
+                    .mustChangePassword(false) // EKLENEN
                     .department(defaultDept)
                     .position(qaEngineer)
                     .build();
 
-            employeeRepository.saveAll(List.of(emp1, emp2));
+            String managerPassword = passwordEncoder.encode("managerPass123");
+            Employee manager = Employee.builder()
+                    .firstName("Mehmet")
+                    .lastName("Kaya")
+                    .email("mehmet.kaya@example.com")
+                    .password(managerPassword)
+                    .phone("+905555555545")
+                    .hireDate(LocalDate.of(2021, 6, 10))
+                    .birthDate(LocalDate.of(1988, 3, 12))
+                    .address("İstanbul, Türkiye")
+                    .role(EmployeeRoleEnum.MANAGER)
+                    .status(EmployeeStatusEnum.ACTIVE)
+                    .mustChangePassword(false)
+                    .department(defaultDept)
+                    .position(pm)
+                    .build();
+
+            employeeRepository.saveAll(List.of(emp1, emp2, manager));
         }
 
         // Salaries

@@ -29,6 +29,3 @@ logging:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION}
-
-default:
-  password: ${DEFAULT_PASSWORD}

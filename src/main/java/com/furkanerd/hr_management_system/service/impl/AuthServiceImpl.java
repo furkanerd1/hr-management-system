@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,9 +41,6 @@ public class AuthServiceImpl implements AuthService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentService departmentService;
     private final PositionService positionService;
-
-    @Value("${default.password}")
-    private String defaultPassword;
 
     public AuthServiceImpl(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmployeeRepository employeeRepository,DepartmentService departmentService, PositionService positionService) {
         this.authenticationManager = authenticationManager;
@@ -104,7 +102,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Set the default password for the first time
-        String tempPassword = defaultPassword;
+        String tempPassword = generateTempPassword();
         String encodedPassword = passwordEncoder.encode(tempPassword);
 
         Employee employee = Employee.builder()
@@ -179,5 +177,10 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private String generateTempPassword() {
+        // Format: EMP + 4 digit random
+        return "EMP" + String.format("%04d", new Random().nextInt(10000));
     }
 }
