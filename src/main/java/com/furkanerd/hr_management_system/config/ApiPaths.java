@@ -9,4 +9,5 @@ public class ApiPaths {
     public static final String ATTENDANCE =  API_VERSION+"/attendance";
     public static final String LEAVES=  API_VERSION+"/leaves";
     public static final String AUTH= API_VERSION+"/auth";
+    public static final String PERFORMANCE_REVIEWS = API_VERSION+"/performance-reviews";
 }

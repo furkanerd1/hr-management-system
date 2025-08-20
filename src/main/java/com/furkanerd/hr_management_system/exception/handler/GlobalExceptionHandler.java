@@ -24,6 +24,52 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(PerformanceReviewNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handlePerformanceReviewNotFoundException(PerformanceReviewNotFoundException e, HttpServletRequest request) {
+        log.error("Performance Review not found: {}" , e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error("Performance Review Not Found")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(InvalidReviewDateException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidReviewDate(InvalidReviewDateException e, HttpServletRequest request) {
+        log.error("Invalid review date: {}", e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Bad Request")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(SelfReviewNotAllowedException.class)
+    public ResponseEntity<ErrorResponseDto> handleSelfReviewNotAllowed(SelfReviewNotAllowedException e, HttpServletRequest request) {
+        log.error("Self review not allowed: {}", e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error("Forbidden")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorResponseDto> handleAuthorizationDenied(AuthorizationDeniedException e, HttpServletRequest request) {
         log.error("Authorization denied: {}", e.getMessage());
