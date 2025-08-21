@@ -45,4 +45,9 @@ public class SalaryServiceImpl implements SalaryService {
 
         return salaryMapper.salaryToSalaryDetailResponse(salaryRepository.save(toCreate));
     }
+
+    @Override
+    public List<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail) {
+        return salaryMapper.salariesToListSalaryResponses(salaryRepository.findAllByEmployeeEmail(employeeEmail));
+    }
 }

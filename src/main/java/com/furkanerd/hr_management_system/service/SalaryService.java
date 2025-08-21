@@ -13,4 +13,6 @@ public interface SalaryService {
 
     SalaryDetailResponse createSalary(SalaryCreateRequest  createRequest);
 
+    List<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail);
+
 }

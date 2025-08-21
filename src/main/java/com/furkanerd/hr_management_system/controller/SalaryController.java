@@ -10,6 +10,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,5 +45,16 @@ public class SalaryController {
     ){
         return ResponseEntity.status(HttpStatus.CREATED).body(salaryService.createSalary(salaryCreateRequest));
 
+    }
+
+    @Operation(summary = "Get current user's salary history",
+            description = "Retrieves the salary history for the authenticated user only. This endpoint is secured and requires a valid JWT token.")
+    @GetMapping("/my-history")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ListSalaryResponse>> showHistory(
+            @AuthenticationPrincipal UserDetails currentUser
+            ){
+        String email = currentUser.getUsername();
+        return ResponseEntity.ok(salaryService.showEmployeeSalaryHistory(email));
     }
 }
