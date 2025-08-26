@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
+
 import static com.furkanerd.hr_management_system.config.ApiPaths.SALARIES;
 
 @RestController
@@ -36,6 +38,15 @@ public class SalaryController {
         return ResponseEntity.ok(salaryService.listAllSalaries());
     }
 
+
+    @Operation(summary = "Get a single salary record by ID",
+            description = "Retrieves a single salary record by its unique ID. This action is restricted to users with the HR role.")
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_HR')")
+    public ResponseEntity<SalaryDetailResponse> getSalary(@PathVariable("id") UUID id){
+        return ResponseEntity.ok(salaryService.getSalaryById(id));
+    }
+
     @Operation(summary = "Create a new salary",
               description = "Creates a new salary record for an employee. This action is restricted to users with the HR role.")
     @PostMapping
@@ -51,10 +62,19 @@ public class SalaryController {
             description = "Retrieves the salary history for the authenticated user only. This endpoint is secured and requires a valid JWT token.")
     @GetMapping("/my-history")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<ListSalaryResponse>> showHistory(
+    public ResponseEntity<List<ListSalaryResponse>> getMySalaryHistory(
             @AuthenticationPrincipal UserDetails currentUser
             ){
         String email = currentUser.getUsername();
         return ResponseEntity.ok(salaryService.showEmployeeSalaryHistory(email));
+    }
+
+    @Operation(summary = "Delete a salary record",
+            description = "Deletes an existing salary record. This action is restricted to users with the HR role.")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ROLE_HR')")
+    public ResponseEntity<Void> deleteSalary(@PathVariable("id") UUID id){
+        salaryService.deleteSalary(id);
+        return ResponseEntity.noContent().build();
     }
 }

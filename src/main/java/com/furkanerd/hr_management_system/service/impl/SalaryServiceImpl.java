@@ -1,5 +1,6 @@
 package com.furkanerd.hr_management_system.service.impl;
 
+import com.furkanerd.hr_management_system.exception.ResourceNotFoundException;
 import com.furkanerd.hr_management_system.mapper.SalaryMapper;
 import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
@@ -9,10 +10,12 @@ import com.furkanerd.hr_management_system.model.entity.Salary;
 import com.furkanerd.hr_management_system.repository.SalaryRepository;
 import com.furkanerd.hr_management_system.service.EmployeeService;
 import com.furkanerd.hr_management_system.service.SalaryService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class SalaryServiceImpl implements SalaryService {
@@ -21,7 +24,7 @@ public class SalaryServiceImpl implements SalaryService {
     private final SalaryMapper salaryMapper;
     private final EmployeeService employeeService;
 
-    public SalaryServiceImpl(SalaryRepository salaryRepository, SalaryMapper salaryMapper, EmployeeService employeeService) {
+    public SalaryServiceImpl(SalaryRepository salaryRepository, SalaryMapper salaryMapper, @Lazy  EmployeeService employeeService) {
         this.salaryRepository = salaryRepository;
         this.salaryMapper = salaryMapper;
         this.employeeService = employeeService;
@@ -30,6 +33,12 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public List<ListSalaryResponse> listAllSalaries() {
         return salaryMapper.salariesToListSalaryResponses( salaryRepository.findAll() );
+    }
+
+    @Override
+    public SalaryDetailResponse getSalaryById(UUID id) {
+        return salaryMapper.salaryToSalaryDetailResponse(salaryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Salary Not Found")));
     }
 
     @Override
@@ -49,5 +58,20 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public List<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail) {
         return salaryMapper.salariesToListSalaryResponses(salaryRepository.findAllByEmployeeEmail(employeeEmail));
+    }
+
+    @Override
+    @Transactional
+    public void deleteSalary(UUID id) {
+        boolean exists = salaryRepository.existsById(id);
+        if (!exists) {
+            throw new ResourceNotFoundException("Salary Not Found");
+        }
+        salaryRepository.deleteById(id);
+    }
+
+    @Override
+    public List<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId) {
+        return salaryMapper.salariesToListSalaryResponses(salaryRepository.findAllByEmployeeId(employeeId));
     }
 }
