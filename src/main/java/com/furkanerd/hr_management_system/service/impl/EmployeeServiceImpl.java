@@ -6,6 +6,7 @@ import com.furkanerd.hr_management_system.mapper.EmployeeMapper;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
+import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.Position;
@@ -14,6 +15,8 @@ import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.service.DepartmentService;
 import com.furkanerd.hr_management_system.service.EmployeeService;
 import com.furkanerd.hr_management_system.service.PositionService;
+import com.furkanerd.hr_management_system.service.SalaryService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +30,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final DepartmentService departmentService;
     private final PositionService positionService;
+    private final SalaryService salaryService;
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper, DepartmentService departmentService, PositionService positionService) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper, DepartmentService departmentService, PositionService positionService,@Lazy SalaryService salaryService) {
         this.employeeRepository = employeeRepository;
         this.employeeMapper = employeeMapper;
         this.departmentService = departmentService;
         this.positionService = positionService;
+        this.salaryService = salaryService;
     }
 
     @Override
@@ -94,6 +99,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 
         return employeeMapper.toEmployeeDetailResponse(employeeRepository.save(toUpdate));
+    }
+
+    @Override
+    public List<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId) {
+        boolean exists = employeeRepository.existsById(employeeId);
+        if (!exists) {
+            throw new EmployeeNotFoundException(employeeId);
+        }
+        return salaryService.getEmployeeSalaryHistory(employeeId);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.furkanerd.hr_management_system.controller;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
+import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -79,6 +80,14 @@ public class EmployeeController {
             ){
         String updaterEmail = currentUser.getUsername();
         return ResponseEntity.ok(employeeService.updateEmployee(employeeIdToUpdate, updateRequest, updaterEmail));
+    }
+
+    @GetMapping("/{employeeId}/salaries")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    public ResponseEntity<List<ListSalaryResponse>> getEmployeeSalaryHistory(
+            @PathVariable UUID employeeId) {
+
+        return ResponseEntity.ok(employeeService.getEmployeeSalaryHistory(employeeId));
     }
 
 
