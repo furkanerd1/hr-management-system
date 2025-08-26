@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
@@ -50,6 +51,12 @@ public class PerformanceReviewController {
         return ResponseEntity.ok(performanceReviewService.getPerformanceReview(id));
     }
 
+    @GetMapping("/my-reviews")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ListPerformanceReviewResponse>> getMyReviews(@AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(performanceReviewService.getMyPerformanceReviews(currentUser.getUsername()));
+    }
+
 
     @Operation(
             summary = "Create a new performance review",
@@ -63,5 +70,24 @@ public class PerformanceReviewController {
             ){
         String email =  userDetails.getUsername();
         return ResponseEntity.status(HttpStatus.CREATED).body(performanceReviewService.createPerformanceReview(createRequest,email));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    public ResponseEntity<PerformanceReviewDetailResponse> updateReview(
+            @PathVariable UUID id,
+            @Valid @RequestBody PerformanceReviewUpdateRequest updateRequest,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        String reviewerEmail = currentUser.getUsername();
+        return ResponseEntity.ok(performanceReviewService.updatePerformanceReview(id, updateRequest, reviewerEmail));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    public ResponseEntity<Void> deleteReview(@PathVariable UUID id,
+                                             @AuthenticationPrincipal UserDetails currentUser) {
+        String reviewerEmail = currentUser.getUsername();
+        performanceReviewService.deletePerformanceReview(id, reviewerEmail);
+        return ResponseEntity.noContent().build();
     }
 }

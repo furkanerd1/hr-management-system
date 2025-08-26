@@ -3,8 +3,10 @@ package com.furkanerd.hr_management_system.service.impl;
 import com.furkanerd.hr_management_system.exception.InvalidReviewDateException;
 import com.furkanerd.hr_management_system.exception.PerformanceReviewNotFoundException;
 import com.furkanerd.hr_management_system.exception.SelfReviewNotAllowedException;
+import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.mapper.PerformanceReviewMapper;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
@@ -47,6 +49,13 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
 
     @Override
+    public List<ListPerformanceReviewResponse> getMyPerformanceReviews(String email) {
+        return performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(
+                performanceReviewRepository.getAllByEmployeeEmail(email)
+        );
+    }
+
+    @Override
     @Transactional
     public PerformanceReviewDetailResponse createPerformanceReview(PerformanceReviewCreateRequest createRequest, String email) {
 
@@ -58,13 +67,9 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
             throw new SelfReviewNotAllowedException("Employee cannot review themselves");
         }
 
-        LocalDate reviewDate = LocalDate.now();
-        if(createRequest.reviewDate() != null) {
-            if(createRequest.reviewDate().isBefore(LocalDate.now())) {
-                reviewDate = createRequest.reviewDate();
-            }else {
-                throw new InvalidReviewDateException("Review date cannot be in the future");
-            }
+        LocalDate reviewDate = createRequest.reviewDate() != null ? createRequest.reviewDate() : LocalDate.now();
+        if (reviewDate.isAfter(LocalDate.now())) {
+            throw new InvalidReviewDateException("Review date cannot be in the future");
         }
 
         // create
@@ -78,4 +83,46 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
         return performanceReviewMapper.performanceReviewToPerformanceReviewDetailResponse(performanceReviewRepository.save(performanceReview));
     }
+
+    @Override
+    @Transactional
+    public PerformanceReviewDetailResponse updatePerformanceReview(UUID id, PerformanceReviewUpdateRequest updateRequest, String reviewerEmail) {
+
+        PerformanceReview performanceReview = performanceReviewRepository.findById(id)
+                .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :"+ id));
+
+        Employee reviewer = employeeService.getEmployeeEntityByEmail(reviewerEmail);
+
+
+        if(!performanceReview.getReviewer().getId().equals(reviewer.getId())) {
+            throw new UnauthorizedActionException("You can only update reviews you created");
+        }
+
+        performanceReview.setRating(updateRequest.rating());
+        performanceReview.setComments(updateRequest.comments());
+
+        LocalDate reviewDate = updateRequest.reviewDate() != null ? updateRequest.reviewDate() : LocalDate.now();
+        if (reviewDate.isAfter(LocalDate.now())) {
+            throw new InvalidReviewDateException("Review date cannot be in the future");
+        }
+
+        performanceReview.setReviewDate(reviewDate);
+        return performanceReviewMapper.performanceReviewToPerformanceReviewDetailResponse(performanceReviewRepository.save(performanceReview));
+    }
+
+    @Override
+    @Transactional
+    public void deletePerformanceReview(UUID id, String reviewerEmail) {
+        Employee reviewer =  employeeService.getEmployeeEntityByEmail(reviewerEmail);
+        PerformanceReview performanceReview = performanceReviewRepository.findById(id)
+                .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :"+ id));
+
+        if(!performanceReview.getReviewer().getId().equals(reviewer.getId())) {
+            throw new UnauthorizedActionException("You can only delete reviews you created");
+        }
+
+        performanceReviewRepository.delete(performanceReview);
+
+    }
+
 }
