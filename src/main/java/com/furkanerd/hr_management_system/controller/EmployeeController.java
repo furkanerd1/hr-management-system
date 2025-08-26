@@ -3,6 +3,7 @@ package com.furkanerd.hr_management_system.controller;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
+import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -90,5 +91,13 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.getEmployeeSalaryHistory(employeeId));
     }
 
+
+    @Operation(summary = "Get performance history for a specific employee",
+            description = "Retrieves a list of performance reviews for a specified employee by ID. This action is restricted to users with the HR or Manager role.")
+    @GetMapping("/{id}/performance-history")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    public ResponseEntity<List<ListPerformanceReviewResponse>> getEmployeePerformanceHistory(@PathVariable("id") UUID employeeId) {
+        return ResponseEntity.ok(employeeService.getPerformanceReviewsByEmployeeId(employeeId));
+    }
 
 }

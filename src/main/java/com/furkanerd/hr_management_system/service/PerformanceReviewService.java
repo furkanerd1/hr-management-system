@@ -21,4 +21,6 @@ public interface PerformanceReviewService {
     PerformanceReviewDetailResponse updatePerformanceReview(UUID id, PerformanceReviewUpdateRequest updateRequest, String reviewerEmail);
 
     void deletePerformanceReview(UUID id, String reviewerEmail);
+
+    List<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId);
 }

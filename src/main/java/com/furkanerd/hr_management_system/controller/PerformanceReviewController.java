@@ -6,6 +6,7 @@ import com.furkanerd.hr_management_system.model.dto.response.performancereview.L
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -51,6 +52,11 @@ public class PerformanceReviewController {
         return ResponseEntity.ok(performanceReviewService.getPerformanceReview(id));
     }
 
+    @Operation(
+            summary = "Get authenticated user's performance reviews",
+            description = "Retrieves a list of all performance review records for the authenticated user. Accessible to all employees.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @GetMapping("/my-reviews")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ListPerformanceReviewResponse>> getMyReviews(@AuthenticationPrincipal UserDetails currentUser) {
@@ -72,6 +78,11 @@ public class PerformanceReviewController {
         return ResponseEntity.status(HttpStatus.CREATED).body(performanceReviewService.createPerformanceReview(createRequest,email));
     }
 
+    @Operation(
+            summary = "Update a performance review by ID",
+            description = "Updates an existing performance review record. Restricted to HR and Manager roles.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @PatchMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<PerformanceReviewDetailResponse> updateReview(
@@ -82,6 +93,11 @@ public class PerformanceReviewController {
         return ResponseEntity.ok(performanceReviewService.updatePerformanceReview(id, updateRequest, reviewerEmail));
     }
 
+
+    @Operation(
+            summary = "Delete a performance review by ID", description = "Deletes a performance review record by its unique ID. Restricted to HR and Manager roles.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<Void> deleteReview(@PathVariable UUID id,

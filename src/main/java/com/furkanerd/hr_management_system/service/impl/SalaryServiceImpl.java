@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.service.impl;
 
 import com.furkanerd.hr_management_system.exception.ResourceNotFoundException;
+import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.SalaryMapper;
 import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
@@ -8,9 +9,7 @@ import com.furkanerd.hr_management_system.model.dto.response.salary.SalaryDetail
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.Salary;
 import com.furkanerd.hr_management_system.repository.SalaryRepository;
-import com.furkanerd.hr_management_system.service.EmployeeService;
 import com.furkanerd.hr_management_system.service.SalaryService;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +21,12 @@ public class SalaryServiceImpl implements SalaryService {
 
     private final SalaryRepository salaryRepository;
     private final SalaryMapper salaryMapper;
-    private final EmployeeService employeeService;
+    private final EmployeeDomainService employeeDomainService;
 
-    public SalaryServiceImpl(SalaryRepository salaryRepository, SalaryMapper salaryMapper, @Lazy  EmployeeService employeeService) {
+    public SalaryServiceImpl(SalaryRepository salaryRepository, SalaryMapper salaryMapper, EmployeeDomainService employeeDomainService) {
         this.salaryRepository = salaryRepository;
         this.salaryMapper = salaryMapper;
-        this.employeeService = employeeService;
+        this.employeeDomainService = employeeDomainService;
     }
 
     @Override
@@ -44,7 +43,7 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     @Transactional
     public SalaryDetailResponse createSalary(SalaryCreateRequest createRequest) {
-        Employee employee =employeeService.getEmployeeEntityById(createRequest.employeeId());
+        Employee employee =employeeDomainService.getEmployeeById(createRequest.employeeId());
         Salary toCreate = Salary.builder()
                 .employee(employee)
                 .salary(createRequest.salary())

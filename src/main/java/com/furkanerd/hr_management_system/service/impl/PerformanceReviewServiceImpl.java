@@ -4,6 +4,7 @@ import com.furkanerd.hr_management_system.exception.InvalidReviewDateException;
 import com.furkanerd.hr_management_system.exception.PerformanceReviewNotFoundException;
 import com.furkanerd.hr_management_system.exception.SelfReviewNotAllowedException;
 import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
+import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.PerformanceReviewMapper;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
@@ -12,7 +13,6 @@ import com.furkanerd.hr_management_system.model.dto.response.performancereview.P
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
 import com.furkanerd.hr_management_system.repository.PerformanceReviewRepository;
-import com.furkanerd.hr_management_system.service.EmployeeService;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,12 +26,12 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
     private final PerformanceReviewRepository performanceReviewRepository;
     private final PerformanceReviewMapper performanceReviewMapper;
-    private final EmployeeService employeeService;
+    private final EmployeeDomainService  employeeDomainService;
 
-    public PerformanceReviewServiceImpl(PerformanceReviewRepository performanceReviewRepository, PerformanceReviewMapper performanceReviewMapper, EmployeeService employeeService) {
+    public PerformanceReviewServiceImpl(PerformanceReviewRepository performanceReviewRepository, PerformanceReviewMapper performanceReviewMapper,EmployeeDomainService employeeDomainService) {
         this.performanceReviewRepository = performanceReviewRepository;
         this.performanceReviewMapper = performanceReviewMapper;
-        this.employeeService = employeeService;
+        this.employeeDomainService = employeeDomainService;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     @Override
     public List<ListPerformanceReviewResponse> getMyPerformanceReviews(String email) {
         return performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(
-                performanceReviewRepository.getAllByEmployeeEmail(email)
+                performanceReviewRepository.findAllByEmployeeEmail(email)
         );
     }
 
@@ -59,9 +59,9 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     @Transactional
     public PerformanceReviewDetailResponse createPerformanceReview(PerformanceReviewCreateRequest createRequest, String email) {
 
-        Employee employee = employeeService.getEmployeeEntityById(createRequest.employeeId());
+        Employee employee = employeeDomainService.getEmployeeById(createRequest.employeeId());
 
-        Employee reviewer= employeeService.getEmployeeEntityByEmail(email);
+        Employee reviewer= employeeDomainService.getEmployeeByEmail(email);
 
         if (employee.getId().equals(reviewer.getId())) {
             throw new SelfReviewNotAllowedException("Employee cannot review themselves");
@@ -91,7 +91,7 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
         PerformanceReview performanceReview = performanceReviewRepository.findById(id)
                 .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :"+ id));
 
-        Employee reviewer = employeeService.getEmployeeEntityByEmail(reviewerEmail);
+        Employee reviewer = employeeDomainService.getEmployeeByEmail(reviewerEmail);
 
 
         if(!performanceReview.getReviewer().getId().equals(reviewer.getId())) {
@@ -113,7 +113,7 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     @Override
     @Transactional
     public void deletePerformanceReview(UUID id, String reviewerEmail) {
-        Employee reviewer =  employeeService.getEmployeeEntityByEmail(reviewerEmail);
+        Employee reviewer =  employeeDomainService.getEmployeeByEmail(reviewerEmail);
         PerformanceReview performanceReview = performanceReviewRepository.findById(id)
                 .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :"+ id));
 
@@ -123,6 +123,13 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
         performanceReviewRepository.delete(performanceReview);
 
+    }
+
+    @Override
+    public List<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId) {
+        return performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(
+                performanceReviewRepository.findAllByEmployeeId(employeeId)
+        );
     }
 
 }

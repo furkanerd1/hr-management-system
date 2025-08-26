@@ -3,6 +3,7 @@ package com.furkanerd.hr_management_system.service;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
+import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 
@@ -28,4 +29,6 @@ public interface EmployeeService {
     boolean phoneExists(String phone);
 
     List<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId);
+
+    List<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId);
 }

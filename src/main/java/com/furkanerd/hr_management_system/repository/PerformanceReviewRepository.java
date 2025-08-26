@@ -10,5 +10,7 @@ import java.util.UUID;
 @Repository
 public interface PerformanceReviewRepository extends JpaRepository<PerformanceReview, UUID> {
 
-    List<PerformanceReview> getAllByEmployeeEmail(String email);
+    List<PerformanceReview> findAllByEmployeeEmail(String email);
+
+    List<PerformanceReview> findAllByEmployeeId(UUID id);
 }
