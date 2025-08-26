@@ -2,8 +2,10 @@ package com.furkanerd.hr_management_system.service.impl;
 
 import com.furkanerd.hr_management_system.exception.LeaveRequestAlreadyProcessedException;
 import com.furkanerd.hr_management_system.exception.LeaveRequestNotFoundException;
+import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.mapper.LeaveRequestMapper;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
@@ -41,6 +43,18 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
+    public LeaveRequestDetailResponse getLeaveRequestById(UUID id) {
+        return leaveRequestMapper.leaveRequestToLeaveRequestDetailResponse(leaveRequestRepository.findById(id)
+                .orElseThrow(() -> new LeaveRequestNotFoundException("LeaveRequestNotFoundException")));
+    }
+
+    @Override
+    public List<ListLeaveRequestResponse> getMyLeaveRequests(String email) {
+        Employee employee = employeeService.getEmployeeEntityByEmail(email);
+        return leaveRequestMapper.leaveRequestsToListLeaveRequestResponse(leaveRequestRepository.findAllByEmployeeEmail(email));
+    }
+
+    @Override
     @Transactional
     public LeaveRequestDetailResponse createLeaveRequest(LeaveRequestCreateRequest createRequest , String email) {
 
@@ -56,6 +70,28 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 .build();
 
         return leaveRequestMapper.leaveRequestToLeaveRequestDetailResponse(leaveRequestRepository.save(toCreate));
+    }
+
+    @Override
+    @Transactional
+    public LeaveRequestDetailResponse editLeaveRequest(UUID leaveRequestId, LeaveRequestEditRequest editRequest, String requesterEmail) {
+
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId).orElseThrow(() -> new LeaveRequestNotFoundException("Leave request with id " + leaveRequestId + " not found"));
+
+        if (!leaveRequest.getEmployee().getEmail().equals(requesterEmail)) {
+            throw new UnauthorizedActionException("You can only edit your own leave request");
+        }
+
+        if(!leaveRequest.getStatus().equals(LeaveStatusEnum.PENDING)){
+            throw new UnauthorizedActionException("It is not possible to edit leave request");
+        }
+
+        leaveRequest.setLeaveType(editRequest.leaveType());
+        leaveRequest.setStartDate(editRequest.startDate());
+        leaveRequest.setEndDate(editRequest.endDate());
+        leaveRequest.setReason(editRequest.reason());
+
+        return leaveRequestMapper.leaveRequestToLeaveRequestDetailResponse(leaveRequestRepository.save(leaveRequest));
     }
 
     @Override
@@ -78,6 +114,23 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
         leaveRequest.setApprovedAt(LocalDateTime.now());
 
         return leaveRequestMapper.leaveRequestToLeaveRequestDetailResponse(leaveRequestRepository.save(leaveRequest));
+    }
+
+    @Override
+    @Transactional
+    public void cancelLeaveRequest(UUID leaveRequestId, String requesterEmail) {
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new LeaveRequestNotFoundException("Leave request not found"));
+
+        if (!leaveRequest.getEmployee().getEmail().equals(requesterEmail)) {
+            throw new UnauthorizedActionException("You can only cancel your own leave request");
+        }
+
+        if (!leaveRequest.getStatus().equals(LeaveStatusEnum.PENDING)) {
+            throw new UnauthorizedActionException("Only pending leave requests can be cancelled");
+        }
+
+        leaveRequestRepository.delete(leaveRequest);
     }
 
 }
