@@ -50,6 +50,7 @@ public class AuthController {
     @PostMapping("/change-password")
     @Operation(summary = "Change a user's password",
             description = "Allows a user to change their password using their old and new password. This method is public")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MessageResponse> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(request.email(),request.oldPassword(),request.newPassword());
         return ResponseEntity.ok(new MessageResponse("Password changed successfully!"));
