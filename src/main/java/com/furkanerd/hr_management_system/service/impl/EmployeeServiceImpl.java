@@ -4,6 +4,7 @@ import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
 import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.mapper.EmployeeMapper;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
@@ -29,14 +30,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final PositionService positionService;
     private final SalaryService salaryService;
     private final PerformanceReviewService performanceReviewService;
+    private final AttendanceService attendanceService;
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper, DepartmentService departmentService, PositionService positionService,SalaryService salaryService, PerformanceReviewService performanceReviewService) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper, DepartmentService departmentService, PositionService positionService, SalaryService salaryService, PerformanceReviewService performanceReviewService, AttendanceService attendanceService) {
         this.employeeRepository = employeeRepository;
         this.employeeMapper = employeeMapper;
         this.departmentService = departmentService;
         this.positionService = positionService;
         this.salaryService = salaryService;
         this.performanceReviewService = performanceReviewService;
+        this.attendanceService = attendanceService;
     }
 
     @Override
@@ -116,6 +119,15 @@ public class EmployeeServiceImpl implements EmployeeService {
              throw new EmployeeNotFoundException(employeeId);
          }
          return performanceReviewService.getPerformanceReviewByEmployeeId(employeeId);
+    }
+
+    @Override
+    public List<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id) {
+        boolean exists = employeeRepository.existsById(id);
+        if (!exists) {
+            throw new EmployeeNotFoundException(id);
+        }
+        return attendanceService.getAttendanceByEmployeeId(id);
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRe
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
-import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.UUID;

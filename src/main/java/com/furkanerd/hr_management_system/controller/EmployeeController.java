@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
@@ -100,4 +101,9 @@ public class EmployeeController {
         return ResponseEntity.ok(employeeService.getPerformanceReviewsByEmployeeId(employeeId));
     }
 
+    @GetMapping("/{id}/attendance-history")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    public ResponseEntity<List<ListAttendanceResponse>> getEmployeeAttendanceHistory(@PathVariable("id") UUID id) {
+        return ResponseEntity.ok(employeeService.getAllAttendanceByEmployeeId(id));
+    }
 }

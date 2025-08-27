@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.service;
 
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
@@ -31,4 +32,6 @@ public interface EmployeeService {
     List<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId);
 
     List<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId);
+
+    List<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id);
 }

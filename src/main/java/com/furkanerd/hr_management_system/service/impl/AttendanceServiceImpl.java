@@ -1,33 +1,35 @@
 package com.furkanerd.hr_management_system.service.impl;
 
 import com.furkanerd.hr_management_system.exception.*;
+import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.AttendanceMapper;
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.AttendanceDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.entity.Attendance;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.AttendanceRepository;
 import com.furkanerd.hr_management_system.service.AttendanceService;
-import com.furkanerd.hr_management_system.service.EmployeeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final AttendanceMapper attendanceMapper;
-    private final EmployeeService employeeService;
+    private final EmployeeDomainService employeeDomainService;
 
-    public AttendanceServiceImpl(AttendanceRepository attendanceRepository, AttendanceMapper attendanceMapper, EmployeeService employeeService) {
+    public AttendanceServiceImpl(AttendanceRepository attendanceRepository, AttendanceMapper attendanceMapper, EmployeeDomainService employeeDomainService) {
         this.attendanceRepository = attendanceRepository;
         this.attendanceMapper = attendanceMapper;
-        this.employeeService = employeeService;
+        this.employeeDomainService = employeeDomainService;
     }
 
     @Override
@@ -36,9 +38,16 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
+    public AttendanceDetailResponse getAttendanceById(UUID id) {
+        return attendanceMapper.attendanceToAttendanceDetailResponse(attendanceRepository.findById(id)
+                .orElseThrow(() -> new AttendanceNotFoundException("Attendance with id: " + id))
+        );
+    }
+
+    @Override
     @Transactional
     public AttendanceDetailResponse createAttendance(AttendanceCreateRequest createRequest) {
-        Employee employee = employeeService.getEmployeeEntityById(createRequest.employeeId());
+        Employee employee = employeeDomainService.getEmployeeById(createRequest.employeeId());
 
         if (attendanceRepository.existsByEmployeeIdAndDate(createRequest.employeeId(),createRequest.date())){
             throw new AttendanceAlreadyExistsException(createRequest.employeeId(), createRequest.date());
@@ -61,7 +70,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional
     public AttendanceDetailResponse autoCheckIn(String employeeEmail) {
-        Employee employee = employeeService.getEmployeeEntityByEmail(employeeEmail);
+        Employee employee = employeeDomainService.getEmployeeByEmail(employeeEmail);
 
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
@@ -91,7 +100,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional
     public AttendanceDetailResponse autoCheckOut(String employeeEmail) {
-        Employee employee =  employeeService.getEmployeeEntityByEmail(employeeEmail);
+        Employee employee =  employeeDomainService.getEmployeeByEmail(employeeEmail);
         LocalDate today = LocalDate.now();
         Attendance attendance = attendanceRepository.findByEmployeeIdAndDate(employee.getId(), today)
                 .orElseThrow(() -> new AttendanceNotFoundException("No attendance found for today " + employee.getId()));
@@ -112,12 +121,47 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
+    @Transactional
+    public AttendanceDetailResponse updateAttendance(UUID id, AttendanceUpdateRequest updateRequest) {
+
+        Attendance toUpdateAttendance = attendanceRepository.findById(id)
+                .orElseThrow(() -> new AttendanceNotFoundException("Attendance with id: " + id));
+
+        if (updateRequest.checkInTime() != null && updateRequest.checkOutTime() != null) {
+            if (updateRequest.checkInTime().isAfter(updateRequest.checkOutTime())) {
+                throw new InvalidAttendanceTimeException("Check-out time must be after check-in time");
+            }
+        }
+
+        if (updateRequest.checkInTime() != null) {
+            toUpdateAttendance.setCheckInTime(updateRequest.checkInTime());
+        }
+
+        if (updateRequest.checkOutTime() != null) {
+            toUpdateAttendance.setCheckOutTime(updateRequest.checkOutTime());
+        }
+        return attendanceMapper.attendanceToAttendanceDetailResponse(attendanceRepository.save(toUpdateAttendance));
+    }
+
+    @Override
     public List<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail) {
 
-        Employee employee = employeeService.getEmployeeEntityByEmail(employeeEmail);
+        Employee employee = employeeDomainService.getEmployeeByEmail(employeeEmail);
 
         return attendanceMapper.attendancesToListAttendanceResponse(attendanceRepository.findAllByEmployeeId(employee.getId()));
 
+    }
+
+    @Override
+    public void deleteAttendance(UUID id) {
+        Attendance attendance = attendanceRepository.findById(id)
+                .orElseThrow(() -> new AttendanceNotFoundException("No attendance found for id " + id));
+        attendanceRepository.delete(attendance);
+    }
+
+    @Override
+    public List<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id) {
+        return attendanceMapper.attendancesToListAttendanceResponse(attendanceRepository.findAllByEmployeeId(id));
     }
 
     private boolean isValidCheckInTime(LocalTime time) {
