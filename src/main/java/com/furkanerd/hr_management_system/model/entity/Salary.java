@@ -13,7 +13,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "salary")
+@Table(name = "salary", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"employee_id", "effective_date"})
+})
 @Getter
 @Setter
 @AllArgsConstructor

@@ -1,5 +1,6 @@
 package com.furkanerd.hr_management_system.service.impl;
 
+import com.furkanerd.hr_management_system.exception.CircularReferenceException;
 import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
 import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.mapper.EmployeeMapper;
@@ -81,6 +82,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if(updateRequest.managerId() != null){
             manager=getEmployeeEntityById(updateRequest.managerId());
+
+            //  circular reference control
+            if (isSubordinateOf(manager, toUpdate)) {
+                throw new CircularReferenceException("Cannot assign manager. This would create a circular reporting hierarchy.");
+            }
         }
 
         if (updateRequest.status() != null) {
@@ -150,5 +156,33 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public boolean phoneExists(String phone) {
         return employeeRepository.existsByPhone(phone);
+    }
+
+
+    /**
+     * Checks whether the given subordinate is in the hierarchy of the manager.
+     * This prevents the creation of a circular reference.
+     *
+     * @param subordinate The subordinate employee (potential new manager)
+     * @param manager The employee whose manager is being changed
+     * @return true if the subordinate appears above in the manager's hierarchy, false otherwise
+     */
+    private boolean isSubordinateOf(Employee subordinate, Employee manager) {
+        if (subordinate == null || manager == null) {
+            return false;
+        }
+
+        if (subordinate.getId().equals(manager.getId())) {
+            return true;
+        }
+
+        Employee currentManager = subordinate.getManager();
+        while (currentManager != null) {
+            if (currentManager.getId().equals(manager.getId())) {
+                return true;
+            }
+            currentManager = currentManager.getManager();
+        }
+        return false;
     }
 }
