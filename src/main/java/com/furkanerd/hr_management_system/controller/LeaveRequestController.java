@@ -2,7 +2,6 @@ package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
-import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
 import com.furkanerd.hr_management_system.service.LeaveRequestService;
@@ -68,7 +67,7 @@ public class LeaveRequestController {
 
     @Operation(summary = "Edit an existing leave request", description = "Updates an existing leave request. Only the requester can update an unapproved request.")
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<LeaveRequestDetailResponse> editLeaveRequest(
             @PathVariable UUID id,
             @Valid @RequestBody LeaveRequestEditRequest editRequest,
@@ -81,15 +80,25 @@ public class LeaveRequestController {
     @PatchMapping("/{id}/approve")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<LeaveRequestDetailResponse> approveLeaveRequest(
-            @PathVariable("id")UUID  leaveRequestId,
-            @Valid @RequestBody LeaveRequestUpdateRequest leaveRequestUpdateRequest,
+            @PathVariable("id") UUID  leaveRequestId,
             @AuthenticationPrincipal UserDetails currentUser
             ){
-
         String approverEmail = currentUser.getUsername();
+        LeaveRequestDetailResponse response = leaveRequestService.approveLeaveRequest(leaveRequestId,approverEmail);
 
-        LeaveRequestDetailResponse response = leaveRequestService.approveLeaveRequest(leaveRequestId,leaveRequestUpdateRequest,approverEmail);
+        return ResponseEntity.ok(response);
+    }
 
+    @Operation(summary = "Reject a leave request", description = "Rejects a specific leave request. The approving user's ID is automatically captured. This action is restricted to HR and Manager roles.")
+    @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    public ResponseEntity<LeaveRequestDetailResponse> rejectLeaveRequest(
+            @PathVariable("id")UUID  leaveRequestId,
+            @AuthenticationPrincipal UserDetails currentUser
+    ){
+
+        String rejecterEmail = currentUser.getUsername();
+        LeaveRequestDetailResponse response = leaveRequestService.rejectLeaveRequest(leaveRequestId,rejecterEmail);
         return ResponseEntity.ok(response);
     }
 

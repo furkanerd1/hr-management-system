@@ -24,6 +24,21 @@ import java.util.stream.Collectors;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(InsufficientLeaveBalanceException.class)
+    public ResponseEntity<ErrorResponseDto> handleInsufficientLeaveBalanceException(InsufficientLeaveBalanceException e , HttpServletRequest request) {
+        log.warn("Insufficient leave balance: {}" , e.getMessage());
+
+        ErrorResponseDto error = ErrorResponseDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Insufficient Leave Balance")
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(UnauthorizedActionException.class)
     public ResponseEntity<ErrorResponseDto> handleUnauthorizedAction(UnauthorizedActionException e, HttpServletRequest request) {
         ErrorResponseDto error = ErrorResponseDto.builder()

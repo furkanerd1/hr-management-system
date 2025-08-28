@@ -1,12 +1,12 @@
 package com.furkanerd.hr_management_system.service.impl;
 
+import com.furkanerd.hr_management_system.exception.InsufficientLeaveBalanceException;
 import com.furkanerd.hr_management_system.exception.LeaveRequestAlreadyProcessedException;
 import com.furkanerd.hr_management_system.exception.LeaveRequestNotFoundException;
 import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.mapper.LeaveRequestMapper;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
-import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +50,6 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     public List<ListLeaveRequestResponse> getMyLeaveRequests(String email) {
-        Employee employee = employeeService.getEmployeeEntityByEmail(email);
         return leaveRequestMapper.leaveRequestsToListLeaveRequestResponse(leaveRequestRepository.findAllByEmployeeEmail(email));
     }
 
@@ -58,10 +57,27 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     @Transactional
     public LeaveRequestDetailResponse createLeaveRequest(LeaveRequestCreateRequest createRequest , String email) {
 
-        Employee employee = employeeService.getEmployeeEntityByEmail(email);
+        Employee requester = employeeService.getEmployeeEntityByEmail(email);
+
+        int totalDays = (int) ChronoUnit.DAYS.between(createRequest.startDate(),createRequest.endDate()) + 1;
+
+        switch (createRequest.leaveType()) {
+            case VACATION -> {
+                if (requester.getVacationBalance() < totalDays) {
+                    throw new InsufficientLeaveBalanceException("Employee does not have enough vacation days.");
+                }
+            }
+            case MATERNITY -> {
+                if (requester.getMaternityBalance() < totalDays) {
+                    throw new InsufficientLeaveBalanceException("Employee does not have enough maternity leave days.");
+                }
+            }
+            case SICK, UNPAID -> {
+            }
+        }
 
         LeaveRequest toCreate = LeaveRequest.builder()
-                .employee(employee)
+                .employee(requester)
                 .leaveType(createRequest.leaveType())
                 .startDate(createRequest.startDate())
                 .endDate(createRequest.endDate())
@@ -96,8 +112,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     @Transactional
-    public LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId, LeaveRequestUpdateRequest updateRequest, String approverEmail) {
-
+    public LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId,String approverEmail) {
 
         Employee approver = employeeService.getEmployeeEntityByEmail(approverEmail);
 
@@ -105,11 +120,52 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 .orElseThrow(() -> new LeaveRequestNotFoundException("Leave request not found: " + leaveRequestId));
 
         if(!leaveRequest.getStatus().equals(LeaveStatusEnum.PENDING)) {
-            throw new LeaveRequestAlreadyProcessedException(leaveRequestId,leaveRequest.getStatus());
+            throw new LeaveRequestAlreadyProcessedException(leaveRequestId, leaveRequest.getStatus());
         }
 
-        // set information
-        leaveRequest.setStatus(updateRequest.status());
+        Employee employee = leaveRequest.getEmployee();
+        int totalDays = leaveRequest.getTotalDays();
+
+        switch (leaveRequest.getLeaveType()) {
+            case VACATION -> {
+                if (employee.getVacationBalance() < totalDays) {
+                    leaveRequest.setStatus(LeaveStatusEnum.REJECTED);
+                } else {
+                    leaveRequest.setStatus(LeaveStatusEnum.APPROVED);
+                    employee.setVacationBalance(employee.getVacationBalance() - totalDays);
+                }
+            }
+            case MATERNITY -> {
+                if (employee.getMaternityBalance() < totalDays) {
+                    leaveRequest.setStatus(LeaveStatusEnum.REJECTED);
+                } else {
+                    leaveRequest.setStatus(LeaveStatusEnum.APPROVED);
+                    employee.setMaternityBalance(employee.getMaternityBalance() - totalDays);
+                }
+            }
+            case SICK, UNPAID -> leaveRequest.setStatus(LeaveStatusEnum.APPROVED);
+        }
+
+        leaveRequest.setApprover(approver);
+        leaveRequest.setApprovedAt(LocalDateTime.now());
+
+        employeeService.saveEmployee(employee);
+        return leaveRequestMapper.leaveRequestToLeaveRequestDetailResponse(leaveRequestRepository.save(leaveRequest));
+    }
+
+    @Override
+    @Transactional
+    public LeaveRequestDetailResponse rejectLeaveRequest(UUID leaveRequestId, String approverEmail) {
+        Employee approver = employeeService.getEmployeeEntityByEmail(approverEmail);
+
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new LeaveRequestNotFoundException("Leave request not found: " + leaveRequestId));
+
+        if (!leaveRequest.getStatus().equals(LeaveStatusEnum.PENDING)) {
+            throw new LeaveRequestAlreadyProcessedException(leaveRequestId, leaveRequest.getStatus());
+        }
+
+        leaveRequest.setStatus(LeaveStatusEnum.REJECTED);
         leaveRequest.setApprover(approver);
         leaveRequest.setApprovedAt(LocalDateTime.now());
 

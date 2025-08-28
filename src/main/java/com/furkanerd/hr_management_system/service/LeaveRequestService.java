@@ -2,7 +2,6 @@ package com.furkanerd.hr_management_system.service;
 
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
-import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
 
@@ -21,7 +20,9 @@ public interface LeaveRequestService {
 
     LeaveRequestDetailResponse editLeaveRequest(UUID leaveRequestId,LeaveRequestEditRequest editRequest, String requesterEmail);
 
-    LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId , LeaveRequestUpdateRequest updateRequest , String approverEmail);
+    LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId , String approverEmail);
+
+    LeaveRequestDetailResponse rejectLeaveRequest(UUID leaveRequestId, String approverEmail);
 
     void cancelLeaveRequest(UUID leaveRequestId, String requesterEmail);
 }
