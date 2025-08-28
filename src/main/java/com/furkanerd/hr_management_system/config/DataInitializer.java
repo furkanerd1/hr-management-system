@@ -99,9 +99,11 @@ public class DataInitializer implements CommandLineRunner {
                     .address("Ankara,Türkiye")
                     .role(EmployeeRoleEnum.HR)
                     .status(EmployeeStatusEnum.ACTIVE)
-                    .mustChangePassword(false) // EKLENEN
+                    .mustChangePassword(false)
                     .department(defaultDept2)
                     .position(pm)
+                    .vacationBalance(20)
+                    .maternityBalance(112)
                     .build();
 
             String employeePassword = passwordEncoder.encode("employeePass123");
@@ -109,15 +111,17 @@ public class DataInitializer implements CommandLineRunner {
                     .firstName("Ayşe")
                     .lastName("Yılmaz")
                     .email("ayse.yilmaz@example.com")
-                    .password(employeePassword) // DÜZELTME: hrPassword yerine employeePassword
+                    .password(employeePassword)
                     .phone("+905555555535")
                     .hireDate(LocalDate.of(2022, 3, 15))
                     .birthDate(LocalDate.of(1992, 8, 20))
                     .role(EmployeeRoleEnum.EMPLOYEE)
                     .status(EmployeeStatusEnum.ACTIVE)
-                    .mustChangePassword(false) // EKLENEN
+                    .mustChangePassword(false)
                     .department(defaultDept)
                     .position(qaEngineer)
+                    .vacationBalance(20)
+                    .maternityBalance(112)
                     .build();
 
             String managerPassword = passwordEncoder.encode("managerPass123");
@@ -135,6 +139,8 @@ public class DataInitializer implements CommandLineRunner {
                     .mustChangePassword(false)
                     .department(defaultDept)
                     .position(pm)
+                    .vacationBalance(20)
+                    .maternityBalance(112)
                     .build();
 
             employeeRepository.saveAll(List.of(emp1, emp2, manager));
@@ -142,7 +148,6 @@ public class DataInitializer implements CommandLineRunner {
 
         // Salaries
         if (salaryRepository.count() == 0) {
-            // Employee’leri DB’den alıyoruz
             Employee emp1 = employeeRepository.findByEmail("ali.veli@example.com")
                     .orElseThrow(() -> new RuntimeException("Employee Ali Veli not found"));
             Employee emp2 = employeeRepository.findByEmail("ayse.yilmaz@example.com")
@@ -152,7 +157,7 @@ public class DataInitializer implements CommandLineRunner {
                     .employee(emp1)
                     .salary(new BigDecimal("5000.00"))
                     .bonus(new BigDecimal("500.00"))
-                    .effectiveDate(LocalDate.now().plusDays(1)) // geleceğe tarih
+                    .effectiveDate(LocalDate.now().plusDays(1))
                     .build();
 
             Salary salary2 = Salary.builder()
@@ -205,6 +210,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             attendanceRepository.saveAll(List.of(att1, att2, att3, att4));
+
         }
     }
 }

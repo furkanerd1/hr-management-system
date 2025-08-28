@@ -72,6 +72,12 @@ public class Employee {
     @Column(name = "must_change_password", nullable = false)
     private boolean mustChangePassword = true;
 
+    @Column(name = "vacation_balance", nullable = false)
+    private Integer vacationBalance = 20;
+
+    @Column(name = "maternity_balance", nullable = false)
+    private Integer maternityBalance = 112;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
