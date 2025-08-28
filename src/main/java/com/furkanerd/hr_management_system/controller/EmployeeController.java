@@ -3,11 +3,14 @@ package com.furkanerd.hr_management_system.controller;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
+import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
+import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +39,7 @@ public class EmployeeController {
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     @Operation(
-            summary = "Get current authenticated user's profile",
-            description = "Retrieves the profile information for the currently authenticated employee. Accessible to all authenticated users (HR, Manager, and Employee)."
+            summary = "Get current authenticated user's profile", description = "Retrieves the profile information for the currently authenticated employee. Accessible to all authenticated users (HR, Manager, and Employee)."
     )
     public ResponseEntity<EmployeeDetailResponse> getMyProfile(
             @AuthenticationPrincipal UserDetails currentUser
@@ -48,8 +50,7 @@ public class EmployeeController {
 
 
     @Operation(
-            summary = "Get all employees",
-            description = "Retrieves a list of all employee records. Accessible only to HR and Manager roles."
+            summary = "Get all employees", description = "Retrieves a list of all employee records. Accessible only to HR and Manager roles."
     )
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
@@ -59,8 +60,7 @@ public class EmployeeController {
 
 
     @Operation(
-            summary = "Get an employee by ID",
-            description = "Retrieves a specific employee record using their unique ID. Accessible only to HR and Manager roles."
+            summary = "Get an employee by ID", description = "Retrieves a specific employee record using their unique ID. Accessible only to HR and Manager roles."
     )
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
@@ -70,8 +70,7 @@ public class EmployeeController {
 
 
     @Operation(
-            summary = "Update an employee's profile",
-            description = "Updates the profile of a specific employee. Employees can only update their own profile. HR and Managers can update any employee's profile."
+            summary = "Update an employee's profile", description = "Updates the profile of a specific employee. Employees can only update their own profile. HR and Managers can update any employee's profile."
     )
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_EMPLOYEE')")
@@ -93,8 +92,7 @@ public class EmployeeController {
     }
 
 
-    @Operation(summary = "Get performance history for a specific employee",
-            description = "Retrieves a list of performance reviews for a specified employee by ID. This action is restricted to users with the HR or Manager role.")
+    @Operation(summary = "Get performance history for a specific employee", description = "Retrieves a list of performance reviews for a specified employee by ID. This action is restricted to users with the HR or Manager role.")
     @GetMapping("/{id}/performance-history")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<List<ListPerformanceReviewResponse>> getEmployeePerformanceHistory(@PathVariable("id") UUID employeeId) {
@@ -106,4 +104,26 @@ public class EmployeeController {
     public ResponseEntity<List<ListAttendanceResponse>> getEmployeeAttendanceHistory(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(employeeService.getAllAttendanceByEmployeeId(id));
     }
+
+    @Operation(summary = "Get an employee's leave balance", description = "Retrieves the leave balance (vacation and maternity) for a specific employee by ID. Accessible to HR, Manager, and the employee themselves.",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @GetMapping("/{id}/leave-balance")
+    @PreAuthorize("hasAnyAuthority('ROLE_EMPLOYEE')")
+    public ResponseEntity<EmployeeLeaveBalanceResponse> getLeaveBalance(@PathVariable("id") UUID id) {
+        EmployeeLeaveBalanceResponse balance = employeeService.getLeaveBalance(id);
+        return ResponseEntity.ok(balance);
+    }
+
+
+    @Operation(summary = "Get authenticated user's leave balance", description = "Retrieves the leave balance for the authenticated user only. Accessible to all employees.",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/my-leave-balance")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<EmployeeLeaveBalanceResponse> getMyLeaveBalance(@AuthenticationPrincipal UserDetails currentUser) {
+        Employee employee = employeeService.getEmployeeEntityByEmail(currentUser.getUsername());
+        return ResponseEntity.ok(employeeService.getLeaveBalance(employee.getId()));
+    }
+
+
 }

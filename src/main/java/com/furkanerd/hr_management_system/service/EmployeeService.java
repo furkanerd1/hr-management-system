@@ -3,6 +3,7 @@ package com.furkanerd.hr_management_system.service;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
+import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
@@ -34,4 +35,8 @@ public interface EmployeeService {
     List<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId);
 
     List<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id);
+
+    EmployeeLeaveBalanceResponse getLeaveBalance(UUID employeeId);
+
+    void saveEmployee(Employee employee);
 }

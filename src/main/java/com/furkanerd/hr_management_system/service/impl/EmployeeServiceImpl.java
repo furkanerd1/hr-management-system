@@ -7,6 +7,7 @@ import com.furkanerd.hr_management_system.mapper.EmployeeMapper;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
+import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
@@ -134,6 +135,17 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new EmployeeNotFoundException(id);
         }
         return attendanceService.getAttendanceByEmployeeId(id);
+    }
+
+    @Override
+    public EmployeeLeaveBalanceResponse getLeaveBalance(UUID employeeId) {
+        return employeeMapper.toEmployeeLeaveBalanceResponse(employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new EmployeeNotFoundException(employeeId)));
+    }
+
+    @Override
+    public void saveEmployee(Employee employee) {
+        employeeRepository.save(employee);
     }
 
     @Override

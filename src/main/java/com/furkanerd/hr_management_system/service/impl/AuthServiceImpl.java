@@ -117,6 +117,8 @@ public class AuthServiceImpl implements AuthService {
                 .role(registerRequest.role())
                 .status(registerRequest.status())
                 .mustChangePassword(true)
+                .vacationBalance(20)
+                .maternityBalance(112)
                 .build();
 
         // Set Department
