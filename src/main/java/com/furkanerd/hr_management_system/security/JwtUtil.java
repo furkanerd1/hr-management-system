@@ -27,14 +27,6 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long jwtExpiration;
 
-
-
-    // Uygulama başlatıldığında bu metot çalışır
-    public void checkSecret() {
-        System.out.println("DEBUG: JWT Secret is -> " + jwtSecret);
-        System.out.println("DEBUG: Secret length -> " + jwtSecret.length());
-    }
-
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
