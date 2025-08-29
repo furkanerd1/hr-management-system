@@ -1,4 +1,4 @@
-package com.furkanerd.hr_management_system.model.dto.response;
+package com.furkanerd.hr_management_system.model.dto.response.auth;
 
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
 

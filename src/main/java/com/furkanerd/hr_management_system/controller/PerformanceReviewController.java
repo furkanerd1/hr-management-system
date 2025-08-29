@@ -2,6 +2,7 @@ package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
@@ -38,8 +39,10 @@ public class PerformanceReviewController {
     )
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    public ResponseEntity<List<ListPerformanceReviewResponse>> getAllReviews () {
-        return ResponseEntity.ok(performanceReviewService.listAllPerformanceReviews());
+    // TODO: Convert to PaginatedResponse when pagination is implemented
+    public ResponseEntity<ApiResponse<List<ListPerformanceReviewResponse>>> getAllReviews () {
+        List<ListPerformanceReviewResponse> reviews = performanceReviewService.listAllPerformanceReviews();
+        return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", reviews));
     }
 
     @Operation(
@@ -48,8 +51,9 @@ public class PerformanceReviewController {
     )
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    public ResponseEntity<PerformanceReviewDetailResponse> getReview(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(performanceReviewService.getPerformanceReview(id));
+    public ResponseEntity<ApiResponse<PerformanceReviewDetailResponse>> getReview(@PathVariable("id") UUID id) {
+        PerformanceReviewDetailResponse review = performanceReviewService.getPerformanceReview(id);
+        return ResponseEntity.ok(ApiResponse.success("Performance review retrieved successfully", review));
     }
 
     @Operation(
@@ -59,8 +63,10 @@ public class PerformanceReviewController {
     )
     @GetMapping("/my-reviews")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<ListPerformanceReviewResponse>> getMyReviews(@AuthenticationPrincipal UserDetails currentUser) {
-        return ResponseEntity.ok(performanceReviewService.getMyPerformanceReviews(currentUser.getUsername()));
+    // TODO: Convert to PaginatedResponse when pagination is implemented
+    public ResponseEntity<ApiResponse<List<ListPerformanceReviewResponse>>> getMyReviews(@AuthenticationPrincipal UserDetails currentUser) {
+        List<ListPerformanceReviewResponse> reviews = performanceReviewService.getMyPerformanceReviews(currentUser.getUsername());
+        return ResponseEntity.ok(ApiResponse.success("My performance reviews retrieved successfully", reviews));
     }
 
 
@@ -70,12 +76,14 @@ public class PerformanceReviewController {
     )
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    public ResponseEntity<PerformanceReviewDetailResponse> createReview(
+    public ResponseEntity<ApiResponse<PerformanceReviewDetailResponse>> createReview(
             @Valid @RequestBody PerformanceReviewCreateRequest createRequest,
             @AuthenticationPrincipal UserDetails userDetails
             ){
-        String email =  userDetails.getUsername();
-        return ResponseEntity.status(HttpStatus.CREATED).body(performanceReviewService.createPerformanceReview(createRequest,email));
+        String email = userDetails.getUsername();
+        PerformanceReviewDetailResponse created = performanceReviewService.createPerformanceReview(createRequest, email);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Performance review created successfully", created));
     }
 
     @Operation(
@@ -85,12 +93,13 @@ public class PerformanceReviewController {
     )
     @PatchMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    public ResponseEntity<PerformanceReviewDetailResponse> updateReview(
+    public ResponseEntity<ApiResponse<PerformanceReviewDetailResponse>> updateReview(
             @PathVariable UUID id,
             @Valid @RequestBody PerformanceReviewUpdateRequest updateRequest,
             @AuthenticationPrincipal UserDetails currentUser) {
         String reviewerEmail = currentUser.getUsername();
-        return ResponseEntity.ok(performanceReviewService.updatePerformanceReview(id, updateRequest, reviewerEmail));
+        PerformanceReviewDetailResponse updated =  performanceReviewService.updatePerformanceReview(id, updateRequest, reviewerEmail);
+        return ResponseEntity.ok(ApiResponse.success("Performance review updated successfully", updated));
     }
 
 
@@ -100,10 +109,9 @@ public class PerformanceReviewController {
     )
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    public ResponseEntity<Void> deleteReview(@PathVariable UUID id,
-                                             @AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable UUID id, @AuthenticationPrincipal UserDetails currentUser) {
         String reviewerEmail = currentUser.getUsername();
         performanceReviewService.deletePerformanceReview(id, reviewerEmail);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Performance review deleted successfully"));
     }
 }
