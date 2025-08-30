@@ -1,14 +1,17 @@
 package com.furkanerd.hr_management_system.service.impl;
 
 import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
+import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.DepartmentMapper;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.department.DepartmentDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.ListDepartmentResponse;
+import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.repository.DepartmentRepository;
 import com.furkanerd.hr_management_system.service.DepartmentService;
+import com.furkanerd.hr_management_system.service.EmployeeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,10 +23,12 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final DepartmentMapper departmentMapper;
+    private final EmployeeDomainService employeeDomainService;
 
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository, DepartmentMapper departmentMapper) {
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, DepartmentMapper departmentMapper, EmployeeDomainService employeeDomainService) {
         this.departmentRepository = departmentRepository;
         this.departmentMapper = departmentMapper;
+        this.employeeDomainService = employeeDomainService;
     }
 
 
@@ -38,6 +43,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new DepartmentNotFoundException(id));
         return departmentMapper.departmentToDepartmentDetailResponse(department);
+    }
+
+    @Override
+    public List<ListEmployeeResponse> getEmployeesByDepartment(UUID departmentId) {
+        return employeeDomainService.getEmployeesByDepartmentId(departmentId);
     }
 
     @Override

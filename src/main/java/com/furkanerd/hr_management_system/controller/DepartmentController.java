@@ -5,6 +5,7 @@ import com.furkanerd.hr_management_system.model.dto.request.department.Departmen
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.DepartmentDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.ListDepartmentResponse;
+import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.service.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,6 +52,18 @@ public class DepartmentController {
     public ResponseEntity<ApiResponse<DepartmentDetailResponse>> getDepartmentById(@PathVariable("id") UUID departmentId) {
         DepartmentDetailResponse department = departmentService.getDepartmentById(departmentId);
         return ResponseEntity.ok(ApiResponse.success("Department retrieved successfully", department));
+    }
+
+    @Operation(
+            summary = "Get all employees for a department",
+            description = "Retrieves a list of all employees working in a specific department. Accessible to HR and Manager roles."
+    )
+    @GetMapping("/{id}/employees")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    // TODO: Convert to PaginatedResponse when pagination is implemented
+    public ResponseEntity<ApiResponse<List<ListEmployeeResponse>>> getEmployeesByDepartment(@PathVariable("id") UUID departmentId) {
+        List<ListEmployeeResponse> employees = departmentService.getEmployeesByDepartment(departmentId);
+        return ResponseEntity.ok(ApiResponse.success("Employees retrieved for department successfully", employees));
     }
 
     @Operation(

@@ -4,6 +4,7 @@ import com.furkanerd.hr_management_system.model.dto.request.department.Departmen
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.department.DepartmentDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.ListDepartmentResponse;
+import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.entity.Department;
 
 import java.util.List;
@@ -15,6 +16,8 @@ public interface DepartmentService {
 
     DepartmentDetailResponse getDepartmentById(UUID id);
 
+    List<ListEmployeeResponse> getEmployeesByDepartment(UUID departmentId);
+
     DepartmentDetailResponse createDepartment(DepartmentCreateRequest createRequest);
 
     DepartmentDetailResponse updateDepartment(UUID departmentId , DepartmentUpdateRequest updateRequest);
@@ -22,5 +25,4 @@ public interface DepartmentService {
     void deleteDepartment(UUID departmentId);
 
     Department getDepartmentEntityById(UUID departmentId);
-
 }
