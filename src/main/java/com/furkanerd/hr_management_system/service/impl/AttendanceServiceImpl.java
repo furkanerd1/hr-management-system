@@ -5,18 +5,25 @@ import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.AttendanceMapper;
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.AttendanceDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.entity.Attendance;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.AttendanceRepository;
 import com.furkanerd.hr_management_system.service.AttendanceService;
+import org.hibernate.query.SortDirection;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -161,8 +168,21 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public List<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id) {
-        return attendanceMapper.attendancesToListAttendanceResponse(attendanceRepository.findAllByEmployeeId(id));
+    public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id,int page,int size,String sortBy,String sortDirection) {
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<Attendance> attendancePage = attendanceRepository.findAllByEmployeeId(id, pageable);
+
+        List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                attendancePage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     /**

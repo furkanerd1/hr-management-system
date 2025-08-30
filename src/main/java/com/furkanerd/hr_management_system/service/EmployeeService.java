@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.service;
 
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
@@ -16,7 +17,7 @@ public interface EmployeeService {
 
     EmployeeDetailResponse getEmployeeDetailByEmail(String email);
 
-    List<ListEmployeeResponse> listAllEmployees();
+    PaginatedResponse<ListEmployeeResponse> listAllEmployees(int page, int size, String sortBy, String sortDirection);
 
     EmployeeDetailResponse getEmployeeById(UUID id);
 
@@ -30,11 +31,11 @@ public interface EmployeeService {
 
     boolean phoneExists(String phone);
 
-    List<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId);
+    PaginatedResponse<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId,int page, int size, String sortBy, String sortDirection);
 
-    List<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId);
+    PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId,int page, int size, String sortBy, String sortDirection);
 
-    List<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id);
+    PaginatedResponse<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id,int page, int size, String sortBy, String sortDirection);
 
     EmployeeLeaveBalanceResponse getLeaveBalance(UUID employeeId);
 

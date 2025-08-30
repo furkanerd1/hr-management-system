@@ -4,12 +4,17 @@ import com.furkanerd.hr_management_system.exception.ResourceNotFoundException;
 import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.SalaryMapper;
 import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.SalaryDetailResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.Salary;
 import com.furkanerd.hr_management_system.repository.SalaryRepository;
 import com.furkanerd.hr_management_system.service.SalaryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +75,21 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
-    public List<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId) {
-        return salaryMapper.salariesToListSalaryResponses(salaryRepository.findAllByEmployeeId(employeeId));
+    public PaginatedResponse<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId,int page,int size,String sortBy,String sortDirection) {
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable =  PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<Salary> salaryPage= salaryRepository.findAllByEmployeeId(employeeId,pageable);
+
+        List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                salaryPage.getTotalElements(),
+                page,
+                size
+        );
     }
 }

@@ -5,6 +5,7 @@ import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
 import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.mapper.EmployeeMapper;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
@@ -13,10 +14,15 @@ import com.furkanerd.hr_management_system.model.dto.response.performancereview.L
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.model.entity.Employee;
+import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
 import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.service.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,13 +52,26 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeDetailResponse getEmployeeDetailByEmail(String email) {
-        Employee employee = getEmployeeEntityByEmail(email);
-        return employeeMapper.toEmployeeDetailResponse(employee);
+        Employee employee = getEmployeeEntityByEmail(email);        return employeeMapper.toEmployeeDetailResponse(employee);
     }
 
     @Override
-    public List<ListEmployeeResponse> listAllEmployees() {
-        return employeeMapper.employeestoListEmployeeResponseList(employeeRepository.findAll());
+    public PaginatedResponse<ListEmployeeResponse> listAllEmployees(int page, int size, String sortBy, String sortDirection) {
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<Employee> employeePage = employeeRepository.findAll(pageable);
+
+        List<ListEmployeeResponse> responseList = employeeMapper.employeestoListEmployeeResponseList(employeePage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                employeePage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override
@@ -111,30 +130,30 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId) {
+    public PaginatedResponse<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId,int page, int size,String sortedBy, String sortDirection) {
         boolean exists = employeeRepository.existsById(employeeId);
         if (!exists) {
             throw new EmployeeNotFoundException(employeeId);
         }
-        return salaryService.getEmployeeSalaryHistory(employeeId);
+        return salaryService.getEmployeeSalaryHistory(employeeId,page,size,sortedBy,sortDirection);
     }
 
     @Override
-    public List<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId) {
-         boolean exists = employeeRepository.existsById(employeeId);
+    public PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId,int page, int size, String sortBy, String sortDirection) {
+        boolean exists = employeeRepository.existsById(employeeId);
          if (!exists) {
              throw new EmployeeNotFoundException(employeeId);
          }
-         return performanceReviewService.getPerformanceReviewByEmployeeId(employeeId);
+         return performanceReviewService.getPerformanceReviewByEmployeeId(employeeId, page, size, sortBy, sortDirection);
     }
 
     @Override
-    public List<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id) {
+    public PaginatedResponse<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id,int  page, int size, String sortBy, String sortDirection) {
         boolean exists = employeeRepository.existsById(id);
         if (!exists) {
             throw new EmployeeNotFoundException(id);
         }
-        return attendanceService.getAttendanceByEmployeeId(id);
+        return attendanceService.getAttendanceByEmployeeId(id,page,size,sortBy,sortDirection);
     }
 
     @Override

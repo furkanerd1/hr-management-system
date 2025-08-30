@@ -8,12 +8,17 @@ import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.PerformanceReviewMapper;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
 import com.furkanerd.hr_management_system.repository.PerformanceReviewRepository;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -126,10 +131,21 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
 
     @Override
-    public List<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId) {
-        return performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(
-                performanceReviewRepository.findAllByEmployeeId(employeeId)
+    public PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId,int page, int size, String sortBy, String sortDirection) {
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<PerformanceReview> reviews = performanceReviewRepository.findAllByEmployeeId(employeeId, pageable);
+
+        List<ListPerformanceReviewResponse> responseList =
+                performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(reviews.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                reviews.getTotalElements(),
+                page,
+                size
         );
     }
-
 }

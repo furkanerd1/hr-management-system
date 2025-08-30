@@ -1,6 +1,8 @@
 package com.furkanerd.hr_management_system.repository;
 
 import com.furkanerd.hr_management_system.model.entity.Attendance;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +19,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, UUID> {
     Optional<Attendance> findByEmployeeIdAndDate(UUID employeeId, LocalDate date);
 
     List<Attendance> findAllByEmployeeId(UUID employeeId);
+
+    Page<Attendance> findAllByEmployeeId(UUID employeeId, Pageable pageable);
 }

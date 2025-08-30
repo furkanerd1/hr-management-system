@@ -1,6 +1,8 @@
 package com.furkanerd.hr_management_system.repository;
 
 import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,5 +14,5 @@ public interface PerformanceReviewRepository extends JpaRepository<PerformanceRe
 
     List<PerformanceReview> findAllByEmployeeEmail(String email);
 
-    List<PerformanceReview> findAllByEmployeeId(UUID id);
+    Page<PerformanceReview> findAllByEmployeeId(UUID id, Pageable pageable);
 }
