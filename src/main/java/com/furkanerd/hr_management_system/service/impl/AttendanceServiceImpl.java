@@ -12,6 +12,7 @@ import com.furkanerd.hr_management_system.model.entity.Attendance;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.AttendanceRepository;
 import com.furkanerd.hr_management_system.service.AttendanceService;
+import com.furkanerd.hr_management_system.util.PaginationUtils;
 import org.hibernate.query.SortDirection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -169,12 +170,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id,int page,int size,String sortBy,String sortDirection) {
-
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
 
         Page<Attendance> attendancePage = attendanceRepository.findAllByEmployeeId(id, pageable);
-
         List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());
 
         return PaginatedResponse.of(

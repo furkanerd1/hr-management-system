@@ -15,6 +15,7 @@ import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
 import com.furkanerd.hr_management_system.repository.PerformanceReviewRepository;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
+import com.furkanerd.hr_management_system.util.PaginationUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -133,11 +134,9 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     @Override
     public PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId,int page, int size, String sortBy, String sortDirection) {
 
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
 
         Page<PerformanceReview> reviews = performanceReviewRepository.findAllByEmployeeId(employeeId, pageable);
-
         List<ListPerformanceReviewResponse> responseList =
                 performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(reviews.getContent());
 
