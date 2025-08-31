@@ -6,18 +6,17 @@ import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryRe
 import com.furkanerd.hr_management_system.model.dto.response.salary.SalaryDetailResponse;
 
 
-import java.util.List;
 import java.util.UUID;
 
 public interface SalaryService {
 
-    List<ListSalaryResponse> listAllSalaries();
+    PaginatedResponse<ListSalaryResponse> listAllSalaries(int page,int size,String sortBy,String sortDirection);
 
     SalaryDetailResponse getSalaryById(UUID id);
 
     SalaryDetailResponse createSalary(SalaryCreateRequest  createRequest);
 
-    List<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail);
+    PaginatedResponse<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail,int page,int size,String sortBy,String sortDirection);
 
     void deleteSalary(UUID id);
 

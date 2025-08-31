@@ -2,6 +2,7 @@ package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.SalaryDetailResponse;
 import com.furkanerd.hr_management_system.service.SalaryService;
@@ -15,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import static com.furkanerd.hr_management_system.config.ApiPaths.SALARIES;
@@ -37,9 +37,15 @@ public class SalaryController {
     )
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_HR')")
-    // TODO: Replace with PaginatedResponse when pagination is added
-    public ResponseEntity<ApiResponse<List<ListSalaryResponse>>> getSalaries(){
-        return ResponseEntity.ok(ApiResponse.success(salaryService.listAllSalaries()));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListSalaryResponse>>> getSalaries(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "effectiveDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+
+    ){
+        PaginatedResponse<ListSalaryResponse> responseList = salaryService.listAllSalaries(page,size,sortBy,sortDirection);
+        return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
 
@@ -72,10 +78,17 @@ public class SalaryController {
             description = "Retrieves the salary history for the authenticated user only. This endpoint is secured and requires a valid JWT token.")
     @GetMapping("/my-history")
     @PreAuthorize("isAuthenticated()")
-    // TODO: Replace with PaginatedResponse when pagination is added
-    public ResponseEntity<ApiResponse<List<ListSalaryResponse>>> getMySalaryHistory(@AuthenticationPrincipal UserDetails currentUser){
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListSalaryResponse>>> getMySalaryHistory(
+            @AuthenticationPrincipal UserDetails currentUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "effectiveDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+
+    ){
         String email = currentUser.getUsername();
-        return ResponseEntity.ok(ApiResponse.success(salaryService.showEmployeeSalaryHistory(email)));
+        PaginatedResponse<ListSalaryResponse> responseList = salaryService.showEmployeeSalaryHistory(email,page,size,sortBy,sortDirection);
+        return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
     @Operation(

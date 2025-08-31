@@ -11,10 +11,9 @@ import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.Salary;
 import com.furkanerd.hr_management_system.repository.SalaryRepository;
 import com.furkanerd.hr_management_system.service.SalaryService;
+import com.furkanerd.hr_management_system.util.PaginationUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +34,18 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
-    public List<ListSalaryResponse> listAllSalaries() {
-        return salaryMapper.salariesToListSalaryResponses( salaryRepository.findAll() );
+    public PaginatedResponse<ListSalaryResponse> listAllSalaries(int page,int size,String sortBy,String sortDirection) {
+        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+
+        Page<Salary> salaryPage = salaryRepository.findAll(pageable);
+        List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                salaryPage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override
@@ -60,8 +69,19 @@ public class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
-    public List<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail) {
-        return salaryMapper.salariesToListSalaryResponses(salaryRepository.findAllByEmployeeEmail(employeeEmail));
+    public PaginatedResponse<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail,int page,int size,String sortBy,String sortDirection) {
+
+        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+
+        Page<Salary> salaryPage = salaryRepository.findAllByEmployeeEmail(employeeEmail,pageable);
+        List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                salaryPage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override
@@ -77,12 +97,9 @@ public class SalaryServiceImpl implements SalaryService {
     @Override
     public PaginatedResponse<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId,int page,int size,String sortBy,String sortDirection) {
 
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-
-        Pageable pageable =  PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
 
         Page<Salary> salaryPage= salaryRepository.findAllByEmployeeId(employeeId,pageable);
-
         List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());
 
         return PaginatedResponse.of(
