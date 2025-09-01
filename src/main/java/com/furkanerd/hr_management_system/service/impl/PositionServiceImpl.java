@@ -4,11 +4,16 @@ import com.furkanerd.hr_management_system.exception.PositionNotFoundException;
 import com.furkanerd.hr_management_system.mapper.PositionMapper;
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
+import com.furkanerd.hr_management_system.util.PaginationUtils;
+import com.furkanerd.hr_management_system.util.PaginationUtils.*;
 import com.furkanerd.hr_management_system.model.dto.response.position.ListPositionResponse;
 import com.furkanerd.hr_management_system.model.dto.response.position.PositionDetailResponse;
 import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.repository.PositionRepository;
 import com.furkanerd.hr_management_system.service.PositionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +32,18 @@ public class PositionServiceImpl implements PositionService {
     }
 
     @Override
-    public List<ListPositionResponse> listAllPositions() {
-        return positionMapper.positionsToListPositionResponses(positionRepository.findAll());
+    public PaginatedResponse<ListPositionResponse> listAllPositions(int page, int size, String sortBy, String sortDirection) {
+        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+
+        Page<Position> positionPage = positionRepository.findAll(pageable);
+        List<ListPositionResponse> responseList = positionMapper.positionsToListPositionResponses(positionPage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                positionPage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override

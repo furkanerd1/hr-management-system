@@ -13,18 +13,14 @@ import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.AttendanceRepository;
 import com.furkanerd.hr_management_system.service.AttendanceService;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
-import org.hibernate.query.SortDirection;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,8 +42,17 @@ public class AttendanceServiceImpl implements AttendanceService {
     private static final LocalTime CHECK_IN_END_TIME = LocalTime.of(10, 0);
 
     @Override
-    public List<ListAttendanceResponse> listAllAttendance() {
-        return attendanceMapper.attendancesToListAttendanceResponse(attendanceRepository.findAll());
+    public PaginatedResponse<ListAttendanceResponse> listAllAttendance(int page,int size, String sortBy,String sortDirection) {
+        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+
+        Page<Attendance> attendancePage = attendanceRepository.findAll(pageable);
+        List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());
+        return PaginatedResponse.of(
+                responseList,
+                attendancePage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override
@@ -153,12 +158,20 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public List<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail) {
+    public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail,int page,int size,String sortBy,String sortDirection) {
+        Employee employee =   employeeDomainService.getEmployeeByEmail(employeeEmail);
 
-        Employee employee = employeeDomainService.getEmployeeByEmail(employeeEmail);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
 
-        return attendanceMapper.attendancesToListAttendanceResponse(attendanceRepository.findAllByEmployeeId(employee.getId()));
+        Page<Attendance> attendancePage = attendanceRepository.findAllByEmployeeId(employee.getId(), pageable);
+        List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());
 
+        return PaginatedResponse.of(
+                responseList,
+                attendancePage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override

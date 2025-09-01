@@ -41,8 +41,19 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
 
     @Override
-    public List<ListPerformanceReviewResponse> listAllPerformanceReviews() {
-        return performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(performanceReviewRepository.findAll());
+    public PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page,int size,String sortBy,String sortDirection) {
+       Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+
+       Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAll(pageable);
+       List<ListPerformanceReviewResponse>  responseList = performanceReviewMapper
+               .performanceReviewsToListPerformanceReviewListResponse(performanceReviewPage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                performanceReviewPage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override
@@ -55,9 +66,18 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
 
     @Override
-    public List<ListPerformanceReviewResponse> getMyPerformanceReviews(String email) {
-        return performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(
-                performanceReviewRepository.findAllByEmployeeEmail(email)
+    public PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email,int page,int size,String sortBy,String sortDirection) {
+        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+
+        Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAllByEmployeeEmail(email,pageable);
+        List<ListPerformanceReviewResponse>  responseList = performanceReviewMapper
+                .performanceReviewsToListPerformanceReviewListResponse(performanceReviewPage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                performanceReviewPage.getTotalElements(),
+                page,
+                size
         );
     }
 

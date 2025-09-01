@@ -3,6 +3,7 @@ package com.furkanerd.hr_management_system.controller;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
 import com.furkanerd.hr_management_system.service.LeaveRequestService;
@@ -16,7 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import static com.furkanerd.hr_management_system.config.ApiPaths.*;
@@ -39,10 +39,14 @@ public class LeaveRequestController {
     )
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    // TODO: Convert to PaginatedResponse when pagination is implemented
-    public ResponseEntity<ApiResponse<List<ListLeaveRequestResponse>>> getAllLeaveRequests() {
-        List<ListLeaveRequestResponse> leaves = leaveRequestService.listAllLeaveRequests();
-        return ResponseEntity.ok(ApiResponse.success("Leave requests retrieved successfully", leaves));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListLeaveRequestResponse>>> getAllLeaveRequests(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ){
+        PaginatedResponse<ListLeaveRequestResponse> responseList = leaveRequestService.listAllLeaveRequests(page,size,sortBy,sortDirection);
+        return ResponseEntity.ok(ApiResponse.success("Leave requests retrieved successfully", responseList));
     }
 
     @Operation(
@@ -63,10 +67,17 @@ public class LeaveRequestController {
     )
     @GetMapping("/my-requests")
     @PreAuthorize("isAuthenticated()")
-    // TODO: Convert to PaginatedResponse when pagination is implemented
-    public ResponseEntity<ApiResponse<List<ListLeaveRequestResponse>>> getMyLeaveRequests(@AuthenticationPrincipal UserDetails currentUser) {
-        List<ListLeaveRequestResponse> leaves = leaveRequestService.getMyLeaveRequests(currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success("My leave requests retrieved successfully", leaves));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListLeaveRequestResponse>>> getMyLeaveRequests(
+            @AuthenticationPrincipal UserDetails currentUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+
+    ){
+        PaginatedResponse<ListLeaveRequestResponse> responseList = leaveRequestService
+                .getMyLeaveRequests(currentUser.getUsername(),page,size,sortBy,sortDirection);
+        return ResponseEntity.ok(ApiResponse.success("My leave requests retrieved successfully", responseList));
     }
 
     @Operation(

@@ -10,5 +10,5 @@ import java.util.UUID;
 @Repository
 public interface PositionRepository extends JpaRepository<Position, UUID> {
 
-    Optional<Position> findByTitle(String softwareEngineer);
+    Optional<Position> findByTitle(String title);
 }

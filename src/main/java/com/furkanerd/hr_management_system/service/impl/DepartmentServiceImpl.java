@@ -5,13 +5,16 @@ import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.DepartmentMapper;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.DepartmentDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.ListDepartmentResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.repository.DepartmentRepository;
 import com.furkanerd.hr_management_system.service.DepartmentService;
-import com.furkanerd.hr_management_system.service.EmployeeService;
+import com.furkanerd.hr_management_system.util.PaginationUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,9 +36,17 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 
     @Override
-    public List<ListDepartmentResponse> listAllDepartments() {
+    public PaginatedResponse<ListDepartmentResponse> listAllDepartments(int page,int size,String sortBy,String sortDirection) {
+        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
 
-        return departmentMapper.departmentsToListDepartmentResponses(departmentRepository.findAll());
+        Page<Department> departmentPage = departmentRepository.findAll(pageable);
+        List<ListDepartmentResponse> responseList = departmentMapper.departmentsToListDepartmentResponses(departmentPage.getContent());
+        return PaginatedResponse.of(
+                responseList,
+                departmentPage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override
@@ -46,8 +57,10 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public List<ListEmployeeResponse> getEmployeesByDepartment(UUID departmentId) {
-        return employeeDomainService.getEmployeesByDepartmentId(departmentId);
+    public PaginatedResponse<ListEmployeeResponse> getEmployeesByDepartment(UUID departmentId,int page,int size,String sortBy,String sortDirection) {
+        departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new DepartmentNotFoundException(departmentId));
+        return employeeDomainService.getEmployeesByDepartmentId(departmentId,page,size,sortBy,sortDirection);
     }
 
     @Override

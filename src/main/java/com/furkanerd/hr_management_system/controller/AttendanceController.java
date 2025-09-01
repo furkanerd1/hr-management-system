@@ -3,13 +3,11 @@ package com.furkanerd.hr_management_system.controller;
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.AttendanceDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -19,7 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import static com.furkanerd.hr_management_system.config.ApiPaths.ATTENDANCE;
@@ -41,10 +38,14 @@ public class AttendanceController {
     )
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    // TODO: Convert to PaginatedResponse when pagination is implemented
-    public ResponseEntity<ApiResponse<List<ListAttendanceResponse>>> getAttendance(){
-        List<ListAttendanceResponse> attendances = attendanceService.listAllAttendance();
-        return ResponseEntity.ok(ApiResponse.success("Attendance records retrieved successfully", attendances));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getAttendance(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ){
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.listAllAttendance(page,size,sortBy,sortDirection);
+        return ResponseEntity.ok(ApiResponse.success("Attendance records retrieved successfully", responseList));
     }
 
     @Operation(
@@ -117,11 +118,16 @@ public class AttendanceController {
     )
     @GetMapping("/my-attendance")
     @PreAuthorize("isAuthenticated()")
-    // TODO: Convert to PaginatedResponse when pagination is implemented
-    public ResponseEntity<ApiResponse<List<ListAttendanceResponse>>> getMyAttendances(@AuthenticationPrincipal UserDetails currentUser){
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getMyAttendances(
+            @AuthenticationPrincipal UserDetails currentUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ){
         String employeeEmail = currentUser.getUsername();
-        List<ListAttendanceResponse> myAttendances = attendanceService.getAttendanceByEmployee(employeeEmail);
-        return ResponseEntity.ok(ApiResponse.success("My attendance records retrieved successfully", myAttendances));
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.getAttendanceByEmployee(employeeEmail,page,size,sortBy,sortDirection);
+        return ResponseEntity.ok(ApiResponse.success("My attendance records retrieved successfully", responseList));
     }
 
     @Operation(

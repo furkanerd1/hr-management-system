@@ -11,11 +11,11 @@ import java.util.UUID;
 
 public interface PerformanceReviewService {
 
-    List<ListPerformanceReviewResponse> listAllPerformanceReviews();
+   PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page,int size,String sortBy,String sortDirection);
 
     PerformanceReviewDetailResponse getPerformanceReview(UUID id);
 
-    List<ListPerformanceReviewResponse> getMyPerformanceReviews(String email);
+    PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email,int page,int size,String sortBy,String sortDirection);
 
     PerformanceReviewDetailResponse createPerformanceReview(PerformanceReviewCreateRequest performanceReviewCreateRequest, String email);
 

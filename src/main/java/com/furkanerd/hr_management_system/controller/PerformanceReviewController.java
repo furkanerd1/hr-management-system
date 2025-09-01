@@ -3,6 +3,7 @@ package com.furkanerd.hr_management_system.controller;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
@@ -39,10 +40,14 @@ public class PerformanceReviewController {
     )
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    // TODO: Convert to PaginatedResponse when pagination is implemented
-    public ResponseEntity<ApiResponse<List<ListPerformanceReviewResponse>>> getAllReviews () {
-        List<ListPerformanceReviewResponse> reviews = performanceReviewService.listAllPerformanceReviews();
-        return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", reviews));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getAllReviews (
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "reviewDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ){
+        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.listAllPerformanceReviews(page,size,sortBy,sortDirection);
+        return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", responseList));
     }
 
     @Operation(
@@ -63,10 +68,15 @@ public class PerformanceReviewController {
     )
     @GetMapping("/my-reviews")
     @PreAuthorize("isAuthenticated()")
-    // TODO: Convert to PaginatedResponse when pagination is implemented
-    public ResponseEntity<ApiResponse<List<ListPerformanceReviewResponse>>> getMyReviews(@AuthenticationPrincipal UserDetails currentUser) {
-        List<ListPerformanceReviewResponse> reviews = performanceReviewService.getMyPerformanceReviews(currentUser.getUsername());
-        return ResponseEntity.ok(ApiResponse.success("My performance reviews retrieved successfully", reviews));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getMyReviews(
+            @AuthenticationPrincipal UserDetails currentUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "reviewDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ){
+        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.getMyPerformanceReviews(currentUser.getUsername(),page,size,sortBy,sortDirection);
+        return ResponseEntity.ok(ApiResponse.success("My performance reviews retrieved successfully", responseList));
     }
 
 

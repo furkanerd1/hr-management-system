@@ -3,6 +3,7 @@ package com.furkanerd.hr_management_system.controller;
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.position.ListPositionResponse;
 import com.furkanerd.hr_management_system.model.dto.response.position.PositionDetailResponse;
 import com.furkanerd.hr_management_system.service.PositionService;
@@ -36,10 +37,15 @@ public class PositionController {
     )
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
-    // TODO: Convert to PaginatedResponse when pagination is implemented
-    public  ResponseEntity<ApiResponse<List<ListPositionResponse>>> getAllPositions() {
-        List<ListPositionResponse> positions = positionService.listAllPositions();
-        return ResponseEntity.ok(ApiResponse.success("Positions retrieved successfully", positions));
+    public  ResponseEntity<ApiResponse<PaginatedResponse<ListPositionResponse>>> getAllPositions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection
+
+    ){
+        PaginatedResponse<ListPositionResponse> responseList = positionService.listAllPositions(page,size,sortBy,sortDirection);
+        return ResponseEntity.ok(ApiResponse.success("Positions retrieved successfully", responseList));
     }
 
     @Operation(

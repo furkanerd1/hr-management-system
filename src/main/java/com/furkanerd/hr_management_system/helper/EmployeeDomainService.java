@@ -2,9 +2,15 @@ package com.furkanerd.hr_management_system.helper;
 
 import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
 import com.furkanerd.hr_management_system.mapper.EmployeeMapper;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
+import com.furkanerd.hr_management_system.util.PaginationUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,9 +37,17 @@ public class EmployeeDomainService {
                 .orElseThrow(() -> new EmployeeNotFoundException(email));
     }
 
-    public List<ListEmployeeResponse> getEmployeesByDepartmentId(UUID departmentId) {
-        return employeeMapper.employeestoListEmployeeResponseList(
-                employeeRepository.findAllByDepartmentId(departmentId)
+    public PaginatedResponse<ListEmployeeResponse> getEmployeesByDepartmentId(UUID departmentId,int page,int size,String sortBy,String sortDirection) {
+        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+
+        Page<Employee> employeePage = employeeRepository.findAllByDepartmentId(departmentId,pageable);
+        List<ListEmployeeResponse> responseList = employeeMapper.employeestoListEmployeeResponseList(employeePage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                employeePage.getTotalElements(),
+                page,
+                size
         );
     }
 

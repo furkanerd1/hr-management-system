@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public interface AttendanceService {
 
-    List<ListAttendanceResponse> listAllAttendance();
+    PaginatedResponse<ListAttendanceResponse> listAllAttendance(int page,int size,String sortBy,String sortDirection);
 
     AttendanceDetailResponse getAttendanceById(UUID id);
 
@@ -24,7 +24,7 @@ public interface AttendanceService {
 
     AttendanceDetailResponse updateAttendance(UUID id,AttendanceUpdateRequest updateRequest);
 
-    List<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail);
+    PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail,int page,int size,String sortBy,String sortDirection);
 
     void deleteAttendance(UUID id);
 
