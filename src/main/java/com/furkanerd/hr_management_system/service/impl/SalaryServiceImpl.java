@@ -12,6 +12,7 @@ import com.furkanerd.hr_management_system.model.entity.Salary;
 import com.furkanerd.hr_management_system.repository.SalaryRepository;
 import com.furkanerd.hr_management_system.service.SalaryService;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
+import com.furkanerd.hr_management_system.util.SortFieldValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,8 @@ public class SalaryServiceImpl implements SalaryService {
 
     @Override
     public PaginatedResponse<ListSalaryResponse> listAllSalaries(int page,int size,String sortBy,String sortDirection) {
-        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("salary",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Page<Salary> salaryPage = salaryRepository.findAll(pageable);
         List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());
@@ -70,8 +72,8 @@ public class SalaryServiceImpl implements SalaryService {
 
     @Override
     public PaginatedResponse<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail,int page,int size,String sortBy,String sortDirection) {
-
-        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("salary",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Page<Salary> salaryPage = salaryRepository.findAllByEmployeeEmail(employeeEmail,pageable);
         List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());
@@ -96,8 +98,8 @@ public class SalaryServiceImpl implements SalaryService {
 
     @Override
     public PaginatedResponse<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId,int page,int size,String sortBy,String sortDirection) {
-
-        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("salary",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Page<Salary> salaryPage= salaryRepository.findAllByEmployeeId(employeeId,pageable);
         List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());

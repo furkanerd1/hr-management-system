@@ -13,6 +13,7 @@ import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.repository.DepartmentRepository;
 import com.furkanerd.hr_management_system.service.DepartmentService;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
+import com.furkanerd.hr_management_system.util.SortFieldValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,8 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public PaginatedResponse<ListDepartmentResponse> listAllDepartments(int page,int size,String sortBy,String sortDirection) {
-        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("department",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
         Page<Department> departmentPage = departmentRepository.findAll(pageable);
         List<ListDepartmentResponse> responseList = departmentMapper.departmentsToListDepartmentResponses(departmentPage.getContent());

@@ -10,6 +10,8 @@ import com.furkanerd.hr_management_system.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,8 +41,8 @@ public class AttendanceController {
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getAttendance(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection
     ){
@@ -120,8 +122,8 @@ public class AttendanceController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getMyAttendances(
             @AuthenticationPrincipal UserDetails currentUser,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection
     ){

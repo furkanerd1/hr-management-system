@@ -13,6 +13,7 @@ import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.AttendanceRepository;
 import com.furkanerd.hr_management_system.service.AttendanceService;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
+import com.furkanerd.hr_management_system.util.SortFieldValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,8 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     public PaginatedResponse<ListAttendanceResponse> listAllAttendance(int page,int size, String sortBy,String sortDirection) {
-        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("attendance",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
         Page<Attendance> attendancePage = attendanceRepository.findAll(pageable);
         List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());
@@ -161,7 +163,8 @@ public class AttendanceServiceImpl implements AttendanceService {
     public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail,int page,int size,String sortBy,String sortDirection) {
         Employee employee =   employeeDomainService.getEmployeeByEmail(employeeEmail);
 
-        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("attendance",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Page<Attendance> attendancePage = attendanceRepository.findAllByEmployeeId(employee.getId(), pageable);
         List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());
@@ -183,7 +186,8 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id,int page,int size,String sortBy,String sortDirection) {
-        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("attendance",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Page<Attendance> attendancePage = attendanceRepository.findAllByEmployeeId(id, pageable);
         List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());

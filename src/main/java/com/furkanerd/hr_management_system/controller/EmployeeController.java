@@ -15,13 +15,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import static com.furkanerd.hr_management_system.config.ApiPaths.EMPLOYEES;
@@ -57,8 +58,8 @@ public class EmployeeController {
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListEmployeeResponse>>>  getAllEmployees(
-            @RequestParam(defaultValue = "0") int page ,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "firstName") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection
     ){
@@ -98,18 +99,18 @@ public class EmployeeController {
             summary = "Get employee salary history",
             description = "Retrieves the salary history for a specific employee by ID. Accessible only to HR and Manager roles."
     )
-    @GetMapping("/{employeeId}/salaries")
+    @GetMapping("/{id}/salaries")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListSalaryResponse>>> getEmployeeSalaryHistory(
-            @PathVariable UUID employeeId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @PathVariable("id") UUID id,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "effectiveDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection
 
     ){
         PaginatedResponse<ListSalaryResponse> responseList = employeeService
-                .getEmployeeSalaryHistory(employeeId,page,size,sortBy,sortDirection);
+                .getEmployeeSalaryHistory(id,page,size,sortBy,sortDirection);
 
         return ResponseEntity.ok(ApiResponse.success(responseList));
     }
@@ -122,8 +123,8 @@ public class EmployeeController {
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public  ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getEmployeePerformanceHistory(
             @PathVariable("id") UUID employeeId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "reviewDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection
     ){
@@ -141,8 +142,8 @@ public class EmployeeController {
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getEmployeeAttendanceHistory(
             @PathVariable("id") UUID id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection
     ){

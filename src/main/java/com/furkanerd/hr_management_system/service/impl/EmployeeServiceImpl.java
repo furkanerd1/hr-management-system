@@ -14,16 +14,14 @@ import com.furkanerd.hr_management_system.model.dto.response.performancereview.L
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.model.entity.Employee;
-import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
 import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.service.*;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
+import com.furkanerd.hr_management_system.util.SortFieldValidator;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,8 +56,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public PaginatedResponse<ListEmployeeResponse> listAllEmployees(int page, int size, String sortBy, String sortDirection) {
-
-        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("employee",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Page<Employee> employeePage = employeeRepository.findAll(pageable);
         List<ListEmployeeResponse> responseList = employeeMapper.employeestoListEmployeeResponseList(employeePage.getContent());

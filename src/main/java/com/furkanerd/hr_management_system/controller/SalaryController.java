@@ -9,6 +9,8 @@ import com.furkanerd.hr_management_system.service.SalaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,8 +40,8 @@ public class SalaryController {
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_HR')")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListSalaryResponse>>> getSalaries(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "effectiveDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection
 
@@ -80,8 +82,8 @@ public class SalaryController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListSalaryResponse>>> getMySalaryHistory(
             @AuthenticationPrincipal UserDetails currentUser,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "effectiveDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection
 

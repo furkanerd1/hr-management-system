@@ -17,6 +17,7 @@ import com.furkanerd.hr_management_system.repository.LeaveRequestRepository;
 import com.furkanerd.hr_management_system.service.EmployeeService;
 import com.furkanerd.hr_management_system.service.LeaveRequestService;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
+import com.furkanerd.hr_management_system.util.SortFieldValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     public PaginatedResponse<ListLeaveRequestResponse> listAllLeaveRequests(int page,int size,String sortBy,String sortDirection) {
-        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("leaveRequest",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Page<LeaveRequest> leaveRequestPage = leaveRequestRepository.findAll(pageable);
         List<ListLeaveRequestResponse> responseList = leaveRequestMapper.leaveRequestsToListLeaveRequestResponse(leaveRequestPage.getContent());
@@ -64,7 +66,8 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     public PaginatedResponse<ListLeaveRequestResponse> getMyLeaveRequests(String email,int page,int size, String sortBy,String sortDirection) {
-        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("leaveRequest",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Page<LeaveRequest> leaveRequestPage = leaveRequestRepository.findAllByEmployeeEmail(email,pageable);
         List<ListLeaveRequestResponse> responseList = leaveRequestMapper.leaveRequestsToListLeaveRequestResponse(leaveRequestPage.getContent());
@@ -212,5 +215,4 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
 
         leaveRequestRepository.delete(leaveRequest);
     }
-
 }

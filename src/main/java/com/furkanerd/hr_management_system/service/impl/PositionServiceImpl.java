@@ -6,12 +6,12 @@ import com.furkanerd.hr_management_system.model.dto.request.position.PositionCre
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
-import com.furkanerd.hr_management_system.util.PaginationUtils.*;
 import com.furkanerd.hr_management_system.model.dto.response.position.ListPositionResponse;
 import com.furkanerd.hr_management_system.model.dto.response.position.PositionDetailResponse;
 import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.repository.PositionRepository;
 import com.furkanerd.hr_management_system.service.PositionService;
+import com.furkanerd.hr_management_system.util.SortFieldValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,8 @@ public class PositionServiceImpl implements PositionService {
 
     @Override
     public PaginatedResponse<ListPositionResponse> listAllPositions(int page, int size, String sortBy, String sortDirection) {
-        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("position",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
         Page<Position> positionPage = positionRepository.findAll(pageable);
         List<ListPositionResponse> responseList = positionMapper.positionsToListPositionResponses(positionPage.getContent());

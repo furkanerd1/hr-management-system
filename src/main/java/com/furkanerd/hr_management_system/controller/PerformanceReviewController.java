@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,7 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 import java.util.UUID;
 
 import static com.furkanerd.hr_management_system.config.ApiPaths.PERFORMANCE_REVIEWS;
@@ -41,8 +43,8 @@ public class PerformanceReviewController {
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getAllReviews (
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "reviewDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection
     ){
@@ -70,8 +72,8 @@ public class PerformanceReviewController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getMyReviews(
             @AuthenticationPrincipal UserDetails currentUser,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "reviewDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection
     ){

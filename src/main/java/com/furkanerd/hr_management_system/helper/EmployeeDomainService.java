@@ -8,9 +8,7 @@ import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,7 +36,8 @@ public class EmployeeDomainService {
     }
 
     public PaginatedResponse<ListEmployeeResponse> getEmployeesByDepartmentId(UUID departmentId,int page,int size,String sortBy,String sortDirection) {
-        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+        String validatedSortBy = validateSortField(sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
         Page<Employee> employeePage = employeeRepository.findAllByDepartmentId(departmentId,pageable);
         List<ListEmployeeResponse> responseList = employeeMapper.employeestoListEmployeeResponseList(employeePage.getContent());
@@ -51,7 +50,12 @@ public class EmployeeDomainService {
         );
     }
 
-    public boolean existsById(UUID employeeId) {
-        return employeeRepository.existsById(employeeId);
+    /**
+     * Validates the sortBy field to ensure it matches allowed fields for sorting.
+     * This prevents malicious input that could manipulate the generated SQL query.
+     */
+    private String validateSortField(String sortBy) {
+        List<String> validFields = List.of("id", "firstName", "lastName", "email", "phone", "hireDate","birthDate","address", "status", "role","createdAt", "updatedAt");
+        return validFields.contains(sortBy) ? sortBy : "firstName";
     }
 }

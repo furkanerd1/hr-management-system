@@ -16,10 +16,9 @@ import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
 import com.furkanerd.hr_management_system.repository.PerformanceReviewRepository;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
+import com.furkanerd.hr_management_system.util.SortFieldValidator;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +41,8 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
     @Override
     public PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page,int size,String sortBy,String sortDirection) {
-       Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("performanceReview",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
        Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAll(pageable);
        List<ListPerformanceReviewResponse>  responseList = performanceReviewMapper
@@ -67,7 +67,8 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
     @Override
     public PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email,int page,int size,String sortBy,String sortDirection) {
-        Pageable pageable = PaginationUtils.buildPageable(page,size,sortBy,sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("performanceReview",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
         Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAllByEmployeeEmail(email,pageable);
         List<ListPerformanceReviewResponse>  responseList = performanceReviewMapper
@@ -153,8 +154,8 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
     @Override
     public PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId,int page, int size, String sortBy, String sortDirection) {
-
-        Pageable pageable = PaginationUtils.buildPageable(page, size, sortBy, sortDirection);
+        String validatedSortBy = SortFieldValidator.validate("performanceReview",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Page<PerformanceReview> reviews = performanceReviewRepository.findAllByEmployeeId(employeeId, pageable);
         List<ListPerformanceReviewResponse> responseList =
