@@ -1,6 +1,10 @@
 package com.furkanerd.hr_management_system.controller;
 
+import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceFilterRequest;
+import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewFilterRequest;
+import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
@@ -52,8 +56,8 @@ public class EmployeeController {
 
 
     @Operation(
-            summary = "Get all employees",
-            description = "Retrieves a list of all employee records. Accessible only to HR and Manager roles."
+            summary = "Get all employees with pagination and filtering",
+            description = "Retrieves a paginated list of employees with optional filtering"
     )
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
@@ -61,9 +65,11 @@ public class EmployeeController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "firstName") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            EmployeeFilterRequest filterRequest
     ){
-        PaginatedResponse<ListEmployeeResponse> result = employeeService.listAllEmployees(page,size,sortBy,sortDirection);
+        PaginatedResponse<ListEmployeeResponse> result = employeeService.listAllEmployees(
+                page,size,sortBy,sortDirection, filterRequest);
 
         return ResponseEntity.ok(ApiResponse.success("Employees retrieved successfully", result));
     }
@@ -106,11 +112,11 @@ public class EmployeeController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "effectiveDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
-
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            SalaryFilterRequest filterRequest
     ){
         PaginatedResponse<ListSalaryResponse> responseList = employeeService
-                .getEmployeeSalaryHistory(id,page,size,sortBy,sortDirection);
+                .getEmployeeSalaryHistory(id,page,size,sortBy,sortDirection,filterRequest);
 
         return ResponseEntity.ok(ApiResponse.success(responseList));
     }
@@ -126,10 +132,11 @@ public class EmployeeController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "reviewDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            PerformanceReviewFilterRequest filterRequest
     ){
         PaginatedResponse<ListPerformanceReviewResponse> responseList =
-                employeeService.getPerformanceReviewsByEmployeeId(employeeId, page, size, sortBy, sortDirection);
+                employeeService.getPerformanceReviewsByEmployeeId(employeeId, page, size, sortBy, sortDirection,filterRequest);
 
         return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", responseList));
     }
@@ -145,10 +152,11 @@ public class EmployeeController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "date") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            AttendanceFilterRequest filterRequest
     ){
         PaginatedResponse<ListAttendanceResponse> responseList = employeeService
-                .getAllAttendanceByEmployeeId(id,page,size,sortBy,sortDirection);
+                .getAllAttendanceByEmployeeId(id,page,size,sortBy,sortDirection,filterRequest);
 
         return  ResponseEntity.ok(ApiResponse.success(responseList));
     }

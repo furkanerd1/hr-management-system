@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.service;
 
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.AttendanceDetailResponse;
@@ -28,5 +29,5 @@ public interface AttendanceService {
 
     void deleteAttendance(UUID id);
 
-    PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id,int page,int size,String sortBy,String sortDirection);
+    PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id, int page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest);
 }
