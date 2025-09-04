@@ -11,13 +11,13 @@ import java.util.UUID;
 
 public interface SalaryService {
 
-    PaginatedResponse<ListSalaryResponse> listAllSalaries(int page,int size,String sortBy,String sortDirection);
+    PaginatedResponse<ListSalaryResponse> listAllSalaries(int page,int size,String sortBy,String sortDirection,SalaryFilterRequest filterRequest);
 
     SalaryDetailResponse getSalaryById(UUID id);
 
     SalaryDetailResponse createSalary(SalaryCreateRequest  createRequest);
 
-    PaginatedResponse<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail,int page,int size,String sortBy,String sortDirection);
+    PaginatedResponse<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail,int page,int size,String sortBy,String sortDirection,SalaryFilterRequest filterRequest);
 
     void deleteSalary(UUID id);
 

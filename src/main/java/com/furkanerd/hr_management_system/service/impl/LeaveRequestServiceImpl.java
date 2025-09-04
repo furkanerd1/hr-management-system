@@ -7,6 +7,7 @@ import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.mapper.LeaveRequestMapper;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
+import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
@@ -16,10 +17,12 @@ import com.furkanerd.hr_management_system.model.enums.LeaveStatusEnum;
 import com.furkanerd.hr_management_system.repository.LeaveRequestRepository;
 import com.furkanerd.hr_management_system.service.EmployeeService;
 import com.furkanerd.hr_management_system.service.LeaveRequestService;
+import com.furkanerd.hr_management_system.specification.LeaveRequestSpecification;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
 import com.furkanerd.hr_management_system.util.SortFieldValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,11 +46,17 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public PaginatedResponse<ListLeaveRequestResponse> listAllLeaveRequests(int page,int size,String sortBy,String sortDirection) {
+    public PaginatedResponse<ListLeaveRequestResponse> listAllLeaveRequests(int page, int size, String sortBy, String sortDirection, LeaveRequestFilterRequest filterRequest) {
         String validatedSortBy = SortFieldValidator.validate("leaveRequest",sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
-        Page<LeaveRequest> leaveRequestPage = leaveRequestRepository.findAll(pageable);
+
+        Specification<LeaveRequest> spec = LeaveRequestSpecification.withFilters(filterRequest);
+
+        Page<LeaveRequest> leaveRequestPage = (spec != null)
+                ? leaveRequestRepository.findAll(spec, pageable)
+                : leaveRequestRepository.findAll(pageable);
+
         List<ListLeaveRequestResponse> responseList = leaveRequestMapper.leaveRequestsToListLeaveRequestResponse(leaveRequestPage.getContent());
 
         return PaginatedResponse.of(
@@ -65,11 +74,18 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public PaginatedResponse<ListLeaveRequestResponse> getMyLeaveRequests(String email,int page,int size, String sortBy,String sortDirection) {
+    public PaginatedResponse<ListLeaveRequestResponse> getMyLeaveRequests(String email,int page,int size, String sortBy,String sortDirection,LeaveRequestFilterRequest filterRequest) {
         String validatedSortBy = SortFieldValidator.validate("leaveRequest",sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
-        Page<LeaveRequest> leaveRequestPage = leaveRequestRepository.findAllByEmployeeEmail(email,pageable);
+        Specification<LeaveRequest> baseSpec = LeaveRequestSpecification.withFilters(filterRequest);
+
+        Specification<LeaveRequest> specification = (baseSpec != null)
+                ? baseSpec.and((root, query, cb) -> cb.equal(root.get("employee").get("email"), email))
+                : (root, query, cb) -> cb.equal(root.get("employee").get("email"), email);
+
+
+        Page<LeaveRequest> leaveRequestPage = leaveRequestRepository.findAll(specification,pageable);
         List<ListLeaveRequestResponse> responseList = leaveRequestMapper.leaveRequestsToListLeaveRequestResponse(leaveRequestPage.getContent());
 
         return PaginatedResponse.of(

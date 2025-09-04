@@ -7,16 +7,15 @@ import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface PerformanceReviewService {
 
-   PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page,int size,String sortBy,String sortDirection);
+   PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page,int size,String sortBy,String sortDirection,PerformanceReviewFilterRequest filterRequest);
 
     PerformanceReviewDetailResponse getPerformanceReview(UUID id);
 
-    PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email,int page,int size,String sortBy,String sortDirection);
+    PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email,int page,int size,String sortBy,String sortDirection,PerformanceReviewFilterRequest filterRequest);
 
     PerformanceReviewDetailResponse createPerformanceReview(PerformanceReviewCreateRequest performanceReviewCreateRequest, String email);
 

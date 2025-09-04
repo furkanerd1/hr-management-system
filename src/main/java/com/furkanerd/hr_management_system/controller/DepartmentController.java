@@ -1,7 +1,9 @@
 package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.DepartmentDetailResponse;
@@ -44,9 +46,10 @@ public class DepartmentController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            DepartmentFilterRequest filterRequest
     ){
-        PaginatedResponse<ListDepartmentResponse> departments = departmentService.listAllDepartments(page,size,sortBy,sortDirection);
+        PaginatedResponse<ListDepartmentResponse> departments = departmentService.listAllDepartments(page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Departments retrieved successfully", departments));
     }
 
@@ -72,9 +75,10 @@ public class DepartmentController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "firstName") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            EmployeeFilterRequest filterRequest
     ){
-        PaginatedResponse<ListEmployeeResponse> responseList = departmentService.getEmployeesByDepartment(departmentId,page,size,sortBy,sortDirection);
+        PaginatedResponse<ListEmployeeResponse> responseList = departmentService.getEmployeesByDepartment(departmentId,page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Employees retrieved for department successfully", responseList));
     }
 

@@ -2,6 +2,7 @@ package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
+import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
@@ -45,9 +46,10 @@ public class LeaveRequestController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            LeaveRequestFilterRequest filterRequest
     ){
-        PaginatedResponse<ListLeaveRequestResponse> responseList = leaveRequestService.listAllLeaveRequests(page,size,sortBy,sortDirection);
+        PaginatedResponse<ListLeaveRequestResponse> responseList = leaveRequestService.listAllLeaveRequests(page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Leave requests retrieved successfully", responseList));
     }
 
@@ -74,11 +76,12 @@ public class LeaveRequestController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            LeaveRequestFilterRequest filterRequest
 
     ){
         PaginatedResponse<ListLeaveRequestResponse> responseList = leaveRequestService
-                .getMyLeaveRequests(currentUser.getUsername(),page,size,sortBy,sortDirection);
+                .getMyLeaveRequests(currentUser.getUsername(),page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("My leave requests retrieved successfully", responseList));
     }
 

@@ -46,11 +46,13 @@ public class AttendanceServiceImpl implements AttendanceService {
     private static final LocalTime CHECK_IN_END_TIME = LocalTime.of(10, 0);
 
     @Override
-    public PaginatedResponse<ListAttendanceResponse> listAllAttendance(int page,int size, String sortBy,String sortDirection) {
+    public PaginatedResponse<ListAttendanceResponse> listAllAttendance(int page,int size, String sortBy,String sortDirection,AttendanceFilterRequest filterRequest) {
         String validatedSortBy = SortFieldValidator.validate("attendance",sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
-        Page<Attendance> attendancePage = attendanceRepository.findAll(pageable);
+        Specification<Attendance> specification = AttendanceSpecification.withFilters(filterRequest);
+
+        Page<Attendance> attendancePage = attendanceRepository.findAll(specification,pageable);
         List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());
         return PaginatedResponse.of(
                 responseList,
@@ -163,13 +165,19 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail,int page,int size,String sortBy,String sortDirection) {
+    public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail,int page,int size,String sortBy,String sortDirection,AttendanceFilterRequest filterRequest) {
         Employee employee =   employeeDomainService.getEmployeeByEmail(employeeEmail);
 
         String validatedSortBy = SortFieldValidator.validate("attendance",sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
-        Page<Attendance> attendancePage = attendanceRepository.findAllByEmployeeId(employee.getId(), pageable);
+        Specification<Attendance> baseSpec = AttendanceSpecification.withFilters(filterRequest);
+
+        Specification<Attendance> specification = (baseSpec != null)
+                ? baseSpec.and((root, query, cb) -> cb.equal(root.get("employee").get("id"), employee.getId()))
+                : (root, query, cb) -> cb.equal(root.get("employee").get("id"), employee.getId());
+
+        Page<Attendance> attendancePage = attendanceRepository.findAll(specification, pageable);
         List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());
 
         return PaginatedResponse.of(

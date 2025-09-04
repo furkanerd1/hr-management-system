@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.position.PositionFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
@@ -43,10 +44,11 @@ public class PositionController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "title") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            PositionFilterRequest filterRequest
 
     ){
-        PaginatedResponse<ListPositionResponse> responseList = positionService.listAllPositions(page,size,sortBy,sortDirection);
+        PaginatedResponse<ListPositionResponse> responseList = positionService.listAllPositions(page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Positions retrieved successfully", responseList));
     }
 

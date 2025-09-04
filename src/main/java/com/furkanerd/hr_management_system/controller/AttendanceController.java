@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
@@ -44,9 +45,10 @@ public class AttendanceController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "date") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            AttendanceFilterRequest filterRequest
     ){
-        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.listAllAttendance(page,size,sortBy,sortDirection);
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.listAllAttendance(page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Attendance records retrieved successfully", responseList));
     }
 
@@ -125,10 +127,11 @@ public class AttendanceController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "date") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            AttendanceFilterRequest filterRequest
     ){
         String employeeEmail = currentUser.getUsername();
-        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.getAttendanceByEmployee(employeeEmail,page,size,sortBy,sortDirection);
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.getAttendanceByEmployee(employeeEmail,page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("My attendance records retrieved successfully", responseList));
     }
 

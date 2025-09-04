@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
@@ -46,9 +47,10 @@ public class PerformanceReviewController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "reviewDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            PerformanceReviewFilterRequest filterRequest
     ){
-        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.listAllPerformanceReviews(page,size,sortBy,sortDirection);
+        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.listAllPerformanceReviews(page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", responseList));
     }
 
@@ -75,9 +77,10 @@ public class PerformanceReviewController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "reviewDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            PerformanceReviewFilterRequest filterRequest
     ){
-        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.getMyPerformanceReviews(currentUser.getUsername(),page,size,sortBy,sortDirection);
+        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.getMyPerformanceReviews(currentUser.getUsername(),page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("My performance reviews retrieved successfully", responseList));
     }
 

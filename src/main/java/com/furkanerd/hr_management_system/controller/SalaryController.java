@@ -1,6 +1,7 @@
 package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
@@ -43,10 +44,11 @@ public class SalaryController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "effectiveDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            SalaryFilterRequest filterRequest
 
     ){
-        PaginatedResponse<ListSalaryResponse> responseList = salaryService.listAllSalaries(page,size,sortBy,sortDirection);
+        PaginatedResponse<ListSalaryResponse> responseList = salaryService.listAllSalaries(page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
@@ -85,11 +87,11 @@ public class SalaryController {
             @RequestParam(defaultValue = "0") @Min(0) int page ,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "effectiveDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection
-
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            SalaryFilterRequest filterRequest
     ){
         String email = currentUser.getUsername();
-        PaginatedResponse<ListSalaryResponse> responseList = salaryService.showEmployeeSalaryHistory(email,page,size,sortBy,sortDirection);
+        PaginatedResponse<ListSalaryResponse> responseList = salaryService.showEmployeeSalaryHistory(email,page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
