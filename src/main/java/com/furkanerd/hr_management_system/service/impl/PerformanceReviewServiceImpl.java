@@ -7,13 +7,22 @@ import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.PerformanceReviewMapper;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
+import com.furkanerd.hr_management_system.model.entity.Salary;
 import com.furkanerd.hr_management_system.repository.PerformanceReviewRepository;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
+import com.furkanerd.hr_management_system.specification.PerformanceReviewSpecification;
+import com.furkanerd.hr_management_system.util.PaginationUtils;
+import com.furkanerd.hr_management_system.util.SortFieldValidator;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +44,22 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
 
     @Override
-    public List<ListPerformanceReviewResponse> listAllPerformanceReviews() {
-        return performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(performanceReviewRepository.findAll());
+    public PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page,int size,String sortBy,String sortDirection,PerformanceReviewFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("performanceReview",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
+
+        Specification<PerformanceReview> specification = PerformanceReviewSpecification.withFilters(filterRequest);
+
+       Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAll(specification,pageable);
+       List<ListPerformanceReviewResponse>  responseList = performanceReviewMapper
+               .performanceReviewsToListPerformanceReviewListResponse(performanceReviewPage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                performanceReviewPage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override
@@ -49,9 +72,25 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
 
     @Override
-    public List<ListPerformanceReviewResponse> getMyPerformanceReviews(String email) {
-        return performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(
-                performanceReviewRepository.findAllByEmployeeEmail(email)
+    public PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email,int page,int size,String sortBy,String sortDirection,PerformanceReviewFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("performanceReview",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
+
+        Specification<PerformanceReview> baseSpec = PerformanceReviewSpecification.withFilters(filterRequest);
+
+        Specification<PerformanceReview> specification = (baseSpec != null)
+                ? baseSpec.and((root, query, cb) -> cb.equal(root.get("employee").get("email"), email))
+                : (root, query, cb) -> cb.equal(root.get("employee").get("email"), email);
+
+        Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAll(specification,pageable);
+        List<ListPerformanceReviewResponse>  responseList = performanceReviewMapper
+                .performanceReviewsToListPerformanceReviewListResponse(performanceReviewPage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                performanceReviewPage.getTotalElements(),
+                page,
+                size
         );
     }
 
@@ -126,10 +165,25 @@ public class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
 
     @Override
-    public List<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId) {
-        return performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(
-                performanceReviewRepository.findAllByEmployeeId(employeeId)
+    public PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("performanceReview",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
+
+        Specification<PerformanceReview> baseSpecification = PerformanceReviewSpecification.withFilters(filterRequest);
+        Specification<PerformanceReview> specification = (baseSpecification != null)
+                ? baseSpecification.and((root, query, cb) -> cb.equal(root.get("employee").get("id"), employeeId))
+                : (root, query, cb) -> cb.equal(root.get("employee").get("id"), employeeId);
+
+
+        Page<PerformanceReview> reviews = performanceReviewRepository.findAll(specification, pageable);
+        List<ListPerformanceReviewResponse> responseList =
+                performanceReviewMapper.performanceReviewsToListPerformanceReviewListResponse(reviews.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                reviews.getTotalElements(),
+                page,
+                size
         );
     }
-
 }

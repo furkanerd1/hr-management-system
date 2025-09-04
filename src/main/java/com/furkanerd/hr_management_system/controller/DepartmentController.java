@@ -1,8 +1,11 @@
 package com.furkanerd.hr_management_system.controller;
 
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.DepartmentDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.ListDepartmentResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
@@ -10,12 +13,14 @@ import com.furkanerd.hr_management_system.service.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+
 import java.util.UUID;
 
 import static com.furkanerd.hr_management_system.config.ApiPaths.DEPARTMENTS;
@@ -37,9 +42,14 @@ public class DepartmentController {
     )
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
-    // TODO: Convert to PaginatedResponse when pagination is implemented
-    public  ResponseEntity<ApiResponse<List<ListDepartmentResponse>>> getAllDepartments() {
-        List<ListDepartmentResponse> departments = departmentService.listAllDepartments();
+    public  ResponseEntity<ApiResponse<PaginatedResponse<ListDepartmentResponse>>> getAllDepartments(
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            DepartmentFilterRequest filterRequest
+    ){
+        PaginatedResponse<ListDepartmentResponse> departments = departmentService.listAllDepartments(page,size,sortBy,sortDirection,filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Departments retrieved successfully", departments));
     }
 
@@ -60,10 +70,16 @@ public class DepartmentController {
     )
     @GetMapping("/{id}/employees")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    // TODO: Convert to PaginatedResponse when pagination is implemented
-    public ResponseEntity<ApiResponse<List<ListEmployeeResponse>>> getEmployeesByDepartment(@PathVariable("id") UUID departmentId) {
-        List<ListEmployeeResponse> employees = departmentService.getEmployeesByDepartment(departmentId);
-        return ResponseEntity.ok(ApiResponse.success("Employees retrieved for department successfully", employees));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListEmployeeResponse>>> getEmployeesByDepartment(
+            @PathVariable("id") UUID departmentId,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "firstName") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            EmployeeFilterRequest filterRequest
+    ){
+        PaginatedResponse<ListEmployeeResponse> responseList = departmentService.getEmployeesByDepartment(departmentId,page,size,sortBy,sortDirection,filterRequest);
+        return ResponseEntity.ok(ApiResponse.success("Employees retrieved for department successfully", responseList));
     }
 
     @Operation(

@@ -1,16 +1,17 @@
 package com.furkanerd.hr_management_system.repository;
 
 import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface PerformanceReviewRepository extends JpaRepository<PerformanceReview, UUID> {
+public interface PerformanceReviewRepository extends JpaRepository<PerformanceReview, UUID>, JpaSpecificationExecutor<PerformanceReview> {
 
-    List<PerformanceReview> findAllByEmployeeEmail(String email);
-
-    List<PerformanceReview> findAllByEmployeeId(UUID id);
+    Page<PerformanceReview> findAllByEmployeeEmail(String email,Pageable pageable);
 }

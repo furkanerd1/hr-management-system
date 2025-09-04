@@ -4,14 +4,22 @@ import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
 import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.DepartmentMapper;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeFilterRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.DepartmentDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.ListDepartmentResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.repository.DepartmentRepository;
 import com.furkanerd.hr_management_system.service.DepartmentService;
-import com.furkanerd.hr_management_system.service.EmployeeService;
+import com.furkanerd.hr_management_system.specification.DepartmentSpecification;
+import com.furkanerd.hr_management_system.util.PaginationUtils;
+import com.furkanerd.hr_management_system.util.SortFieldValidator;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,9 +41,20 @@ public class DepartmentServiceImpl implements DepartmentService {
 
 
     @Override
-    public List<ListDepartmentResponse> listAllDepartments() {
+    public PaginatedResponse<ListDepartmentResponse> listAllDepartments(int page,int size,String sortBy,String sortDirection,DepartmentFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("department",sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
-        return departmentMapper.departmentsToListDepartmentResponses(departmentRepository.findAll());
+        Specification<Department> specification = DepartmentSpecification.withFilters(filterRequest);
+
+        Page<Department> departmentPage = departmentRepository.findAll(specification,pageable);
+        List<ListDepartmentResponse> responseList = departmentMapper.departmentsToListDepartmentResponses(departmentPage.getContent());
+        return PaginatedResponse.of(
+                responseList,
+                departmentPage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override
@@ -46,8 +65,10 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public List<ListEmployeeResponse> getEmployeesByDepartment(UUID departmentId) {
-        return employeeDomainService.getEmployeesByDepartmentId(departmentId);
+    public PaginatedResponse<ListEmployeeResponse> getEmployeesByDepartment(UUID departmentId,int page,int size,String sortBy,String sortDirection, EmployeeFilterRequest filterRequest) {
+        departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new DepartmentNotFoundException(departmentId));
+        return employeeDomainService.getEmployeesByDepartmentId(departmentId,page,size,sortBy,sortDirection,filterRequest);
     }
 
     @Override

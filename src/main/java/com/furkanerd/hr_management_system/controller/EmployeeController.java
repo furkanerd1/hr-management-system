@@ -1,7 +1,12 @@
 package com.furkanerd.hr_management_system.controller;
 
+import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceFilterRequest;
+import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewFilterRequest;
+import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
@@ -14,13 +19,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import static com.furkanerd.hr_management_system.config.ApiPaths.EMPLOYEES;
@@ -50,14 +56,22 @@ public class EmployeeController {
 
 
     @Operation(
-            summary = "Get all employees",
-            description = "Retrieves a list of all employee records. Accessible only to HR and Manager roles."
+            summary = "Get all employees with pagination and filtering",
+            description = "Retrieves a paginated list of employees with optional filtering"
     )
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    // TODO: using PaginatedResponse once pagination is implemented
-    public ResponseEntity<ApiResponse<List<ListEmployeeResponse>>>  getAllEmployees(){
-        return ResponseEntity.ok(ApiResponse.success(employeeService.listAllEmployees()));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListEmployeeResponse>>>  getAllEmployees(
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "firstName") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            EmployeeFilterRequest filterRequest
+    ){
+        PaginatedResponse<ListEmployeeResponse> result = employeeService.listAllEmployees(
+                page,size,sortBy,sortDirection, filterRequest);
+
+        return ResponseEntity.ok(ApiResponse.success("Employees retrieved successfully", result));
     }
 
 
@@ -91,11 +105,20 @@ public class EmployeeController {
             summary = "Get employee salary history",
             description = "Retrieves the salary history for a specific employee by ID. Accessible only to HR and Manager roles."
     )
-    @GetMapping("/{employeeId}/salaries")
+    @GetMapping("/{id}/salaries")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    // TODO: Replace with PaginatedResponse when pagination is added
-    public ResponseEntity<ApiResponse<List<ListSalaryResponse>>> getEmployeeSalaryHistory(@PathVariable UUID employeeId) {
-        return ResponseEntity.ok(ApiResponse.success( employeeService.getEmployeeSalaryHistory(employeeId)));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListSalaryResponse>>> getEmployeeSalaryHistory(
+            @PathVariable("id") UUID id,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "effectiveDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            SalaryFilterRequest filterRequest
+    ){
+        PaginatedResponse<ListSalaryResponse> responseList = employeeService
+                .getEmployeeSalaryHistory(id,page,size,sortBy,sortDirection,filterRequest);
+
+        return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
 
@@ -104,9 +127,18 @@ public class EmployeeController {
             description = "Retrieves a list of performance reviews for a specified employee by ID. This action is restricted to users with the HR or Manager role.")
     @GetMapping("/{id}/performance-history")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    // TODO: Replace with PaginatedResponse when pagination is added
-    public  ResponseEntity<ApiResponse<List<ListPerformanceReviewResponse>>> getEmployeePerformanceHistory(@PathVariable("id") UUID employeeId) {
-        return ResponseEntity.ok(ApiResponse.success( employeeService.getPerformanceReviewsByEmployeeId(employeeId)));
+    public  ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getEmployeePerformanceHistory(
+            @PathVariable("id") UUID employeeId,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "reviewDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            PerformanceReviewFilterRequest filterRequest
+    ){
+        PaginatedResponse<ListPerformanceReviewResponse> responseList =
+                employeeService.getPerformanceReviewsByEmployeeId(employeeId, page, size, sortBy, sortDirection,filterRequest);
+
+        return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", responseList));
     }
 
     @Operation(
@@ -115,9 +147,18 @@ public class EmployeeController {
     )
     @GetMapping("/{id}/attendance-history")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    // TODO: Replace with PaginatedResponse when pagination is added
-    public ResponseEntity<ApiResponse<List<ListAttendanceResponse>>> getEmployeeAttendanceHistory(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(ApiResponse.success(employeeService.getAllAttendanceByEmployeeId(id)));
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getEmployeeAttendanceHistory(
+            @PathVariable("id") UUID id,
+            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            AttendanceFilterRequest filterRequest
+    ){
+        PaginatedResponse<ListAttendanceResponse> responseList = employeeService
+                .getAllAttendanceByEmployeeId(id,page,size,sortBy,sortDirection,filterRequest);
+
+        return  ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
     @Operation(

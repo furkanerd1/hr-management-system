@@ -1,6 +1,11 @@
 package com.furkanerd.hr_management_system.service;
 
+import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceFilterRequest;
+import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewFilterRequest;
+import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryFilterRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
@@ -16,7 +21,7 @@ public interface EmployeeService {
 
     EmployeeDetailResponse getEmployeeDetailByEmail(String email);
 
-    List<ListEmployeeResponse> listAllEmployees();
+    PaginatedResponse<ListEmployeeResponse> listAllEmployees(int page, int size, String sortBy, String sortDirection, EmployeeFilterRequest filterRequest);
 
     EmployeeDetailResponse getEmployeeById(UUID id);
 
@@ -30,11 +35,11 @@ public interface EmployeeService {
 
     boolean phoneExists(String phone);
 
-    List<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId);
+    PaginatedResponse<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId, int page, int size, String sortBy, String sortDirection, SalaryFilterRequest filterRequest);
 
-    List<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId);
+    PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest);
 
-    List<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id);
+    PaginatedResponse<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id, int page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest);
 
     EmployeeLeaveBalanceResponse getLeaveBalance(UUID employeeId);
 

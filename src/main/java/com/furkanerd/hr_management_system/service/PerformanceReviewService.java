@@ -1,20 +1,21 @@
 package com.furkanerd.hr_management_system.service;
 
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface PerformanceReviewService {
 
-    List<ListPerformanceReviewResponse> listAllPerformanceReviews();
+   PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page,int size,String sortBy,String sortDirection,PerformanceReviewFilterRequest filterRequest);
 
     PerformanceReviewDetailResponse getPerformanceReview(UUID id);
 
-    List<ListPerformanceReviewResponse> getMyPerformanceReviews(String email);
+    PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email,int page,int size,String sortBy,String sortDirection,PerformanceReviewFilterRequest filterRequest);
 
     PerformanceReviewDetailResponse createPerformanceReview(PerformanceReviewCreateRequest performanceReviewCreateRequest, String email);
 
@@ -22,5 +23,5 @@ public interface PerformanceReviewService {
 
     void deletePerformanceReview(UUID id, String reviewerEmail);
 
-    List<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId);
+    PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest);
 }

@@ -2,19 +2,17 @@ package com.furkanerd.hr_management_system.repository;
 
 import com.furkanerd.hr_management_system.model.entity.Attendance;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface AttendanceRepository extends JpaRepository<Attendance, UUID> {
+public interface AttendanceRepository extends JpaRepository<Attendance, UUID>, JpaSpecificationExecutor<Attendance> {
 
     boolean existsByEmployeeIdAndDate(UUID employeeId, LocalDate date);
 
     Optional<Attendance> findByEmployeeIdAndDate(UUID employeeId, LocalDate date);
-
-    List<Attendance> findAllByEmployeeId(UUID employeeId);
 }

@@ -1,17 +1,19 @@
 package com.furkanerd.hr_management_system.service;
 
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceCreateRequest;
+import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceUpdateRequest;
+import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.AttendanceDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
-import jakarta.validation.Valid;
 
-import java.util.List;
+
+
 import java.util.UUID;
 
 public interface AttendanceService {
 
-    List<ListAttendanceResponse> listAllAttendance();
+    PaginatedResponse<ListAttendanceResponse> listAllAttendance(int page,int size,String sortBy,String sortDirection,AttendanceFilterRequest filterRequest);
 
     AttendanceDetailResponse getAttendanceById(UUID id);
 
@@ -23,9 +25,9 @@ public interface AttendanceService {
 
     AttendanceDetailResponse updateAttendance(UUID id,AttendanceUpdateRequest updateRequest);
 
-    List<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail);
+    PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail,int page,int size,String sortBy,String sortDirection,AttendanceFilterRequest filterRequest);
 
     void deleteAttendance(UUID id);
 
-    List<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id);
+    PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id, int page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest);
 }
