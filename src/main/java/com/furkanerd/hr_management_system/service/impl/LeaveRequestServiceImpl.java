@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class LeaveRequestServiceImpl implements LeaveRequestService {
+class LeaveRequestServiceImpl implements LeaveRequestService {
 
     private final LeaveRequestRepository leaveRequestRepository;
     private final LeaveRequestMapper leaveRequestMapper;

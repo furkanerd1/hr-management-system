@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class SalaryServiceImpl implements SalaryService {
+class SalaryServiceImpl implements SalaryService {
 
     private final SalaryRepository salaryRepository;
     private final SalaryMapper salaryMapper;

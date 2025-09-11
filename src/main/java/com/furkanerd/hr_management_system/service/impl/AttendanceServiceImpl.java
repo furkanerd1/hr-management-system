@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class AttendanceServiceImpl implements AttendanceService {
+class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
     private final AttendanceMapper attendanceMapper;

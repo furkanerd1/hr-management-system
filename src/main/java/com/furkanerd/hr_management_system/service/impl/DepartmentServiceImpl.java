@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class DepartmentServiceImpl implements DepartmentService {
+class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
     private final DepartmentMapper departmentMapper;
