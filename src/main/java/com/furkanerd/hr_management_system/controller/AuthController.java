@@ -16,7 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
-import static com.furkanerd.hr_management_system.config.ApiPaths.*;
+import static com.furkanerd.hr_management_system.constants.ApiPaths.*;
 
 @RestController
 @RequestMapping(AUTH)

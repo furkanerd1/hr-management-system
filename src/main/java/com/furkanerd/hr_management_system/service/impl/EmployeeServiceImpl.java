@@ -1,5 +1,6 @@
 package com.furkanerd.hr_management_system.service.impl;
 
+import com.furkanerd.hr_management_system.constants.SortFieldConstants;
 import com.furkanerd.hr_management_system.exception.CircularReferenceException;
 import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
 import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
@@ -16,6 +17,7 @@ import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
 import com.furkanerd.hr_management_system.repository.DepartmentRepository;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
+import com.furkanerd.hr_management_system.repository.PositionRepository;
 import com.furkanerd.hr_management_system.service.*;
 import com.furkanerd.hr_management_system.specification.EmployeeSpecification;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
@@ -34,16 +36,14 @@ class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
+    private final PositionRepository positionRepository;
     private final EmployeeMapper employeeMapper;
-    private final DepartmentService departmentService;
-    private final PositionService positionService;
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, EmployeeMapper employeeMapper, DepartmentService departmentService, PositionService positionService) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, EmployeeMapper employeeMapper,PositionRepository positionRepository) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
         this.employeeMapper = employeeMapper;
-        this.departmentService = departmentService;
-        this.positionService = positionService;
+        this.positionRepository = positionRepository;
     }
 
     @Override
@@ -54,7 +54,7 @@ class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public PaginatedResponse<ListEmployeeResponse> listAllEmployees(int page, int size, String sortBy, String sortDirection, EmployeeFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("employee", sortBy);
+        String validatedSortBy = SortFieldValidator.validate(SortFieldConstants.EMPLOYEE_SORT_FIELD, sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Employee> specification = EmployeeSpecification.withFilters(filterRequest);
@@ -90,8 +90,10 @@ class EmployeeServiceImpl implements EmployeeService {
             throw new UnauthorizedActionException("Employees can only update their own profile");
         }
 
-        Department department = departmentService.getDepartmentEntityById(updateRequest.departmentId());
-        Position position = positionService.getPositionEntityById(updateRequest.positionId());
+        Department department =departmentRepository.findById(updateRequest.departmentId())
+                .orElseThrow(() -> new DepartmentNotFoundException(updateRequest.departmentId()));
+        Position position = positionRepository.findById(updateRequest.positionId())
+                .orElseThrow(() -> new RuntimeException("Position not found with id: " + updateRequest.positionId()));
 
         Employee manager = null;
 
@@ -129,7 +131,7 @@ class EmployeeServiceImpl implements EmployeeService {
         departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new DepartmentNotFoundException(departmentId));
 
-        String validatedSortBy = SortFieldValidator.validate("employee", sortBy);
+        String validatedSortBy = SortFieldValidator.validate(SortFieldConstants.EMPLOYEE_SORT_FIELD, sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Employee> specification = EmployeeSpecification.withFilters(filterRequest);

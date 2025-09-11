@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-import static com.furkanerd.hr_management_system.config.ApiPaths.*;
+import static com.furkanerd.hr_management_system.constants.ApiPaths.*;
 
 @RestController
 @RequestMapping(POSITIONS)

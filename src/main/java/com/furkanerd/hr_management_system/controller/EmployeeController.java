@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-import static com.furkanerd.hr_management_system.config.ApiPaths.EMPLOYEES;
+import static com.furkanerd.hr_management_system.constants.ApiPaths.EMPLOYEES;
 
 @RestController
 @RequestMapping(EMPLOYEES)

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-import static com.furkanerd.hr_management_system.config.ApiPaths.PERFORMANCE_REVIEWS;
+import static com.furkanerd.hr_management_system.constants.ApiPaths.PERFORMANCE_REVIEWS;
 
 @RestController
 @RequestMapping(PERFORMANCE_REVIEWS)
