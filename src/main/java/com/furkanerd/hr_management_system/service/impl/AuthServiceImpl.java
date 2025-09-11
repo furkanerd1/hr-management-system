@@ -41,7 +41,7 @@ class AuthServiceImpl implements AuthService {
     private final DepartmentService departmentService;
     private final PositionService positionService;
 
-    public AuthServiceImpl(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmployeeRepository employeeRepository,DepartmentService departmentService, PositionService positionService) {
+    public AuthServiceImpl(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmployeeRepository employeeRepository, DepartmentService departmentService, PositionService positionService) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
@@ -81,23 +81,23 @@ class AuthServiceImpl implements AuthService {
                             .collect(Collectors.toList()))
                     .mustChangePassword(employee.isMustChangePassword())
                     .build();
-        }catch (BadCredentialsException e){
+        } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Invalid username or password", e);
         }
     }
 
     @Override
     @Transactional
-    public RegisterResponse register(RegisterRequest registerRequest){
+    public RegisterResponse register(RegisterRequest registerRequest) {
 
-        if (employeeRepository.existsByEmail(registerRequest.email())){
-            throw new EmailAlreadyExistsException("Email already exists: "+ registerRequest.email());
+        if (employeeRepository.existsByEmail(registerRequest.email())) {
+            throw new EmailAlreadyExistsException("Email already exists: " + registerRequest.email());
         }
 
-        if(registerRequest.phone() != null &&
+        if (registerRequest.phone() != null &&
                 !registerRequest.phone().trim().isEmpty() &&
-                employeeRepository.existsByPhone(registerRequest.phone())){
-            throw new PhoneNumberAlreadyExistsException("Phone number already exists: "+ registerRequest.phone());
+                employeeRepository.existsByPhone(registerRequest.phone())) {
+            throw new PhoneNumberAlreadyExistsException("Phone number already exists: " + registerRequest.phone());
         }
 
         // Set the default password for the first time
@@ -143,21 +143,21 @@ class AuthServiceImpl implements AuthService {
 
             employee.setManager(manager);
         }
-         Employee savedEmployee = employeeRepository.save(employee);
-         return new RegisterResponse(
-                 savedEmployee.getId(),
-                 savedEmployee.getEmail(),
-                 savedEmployee.getFirstName(),
-                 savedEmployee.getLastName(),
-                 savedEmployee.getRole(),
-                 tempPassword,
-                 List.of(savedEmployee.getRole().name())
-         );
+        Employee savedEmployee = employeeRepository.save(employee);
+        return new RegisterResponse(
+                savedEmployee.getId(),
+                savedEmployee.getEmail(),
+                savedEmployee.getFirstName(),
+                savedEmployee.getLastName(),
+                savedEmployee.getRole(),
+                tempPassword,
+                List.of(savedEmployee.getRole().name())
+        );
     }
 
     @Override
     @Transactional
-    public void changePassword(String email, String oldPassword, String newPassword){
+    public void changePassword(String email, String oldPassword, String newPassword) {
         Employee employee = employeeRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 

@@ -43,14 +43,14 @@ public class PerformanceReviewController {
     )
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    public ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getAllReviews (
-            @RequestParam(defaultValue = "0") @Min(0) int page ,
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getAllReviews(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "reviewDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection,
             PerformanceReviewFilterRequest filterRequest
-    ){
-        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.listAllPerformanceReviews(page,size,sortBy,sortDirection,filterRequest);
+    ) {
+        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.listAllPerformanceReviews(page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", responseList));
     }
 
@@ -74,14 +74,33 @@ public class PerformanceReviewController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getMyReviews(
             @AuthenticationPrincipal UserDetails currentUser,
-            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "reviewDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection,
             PerformanceReviewFilterRequest filterRequest
-    ){
-        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.getMyPerformanceReviews(currentUser.getUsername(),page,size,sortBy,sortDirection,filterRequest);
+    ) {
+        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.getMyPerformanceReviews(currentUser.getUsername(), page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("My performance reviews retrieved successfully", responseList));
+    }
+
+
+    @Operation(
+            summary = "Get performance history for a specific employee",
+            description = "Retrieves a list of performance reviews for a specified employee by ID. This action is restricted to users with the HR or Manager role.")
+    @GetMapping("/employee/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListPerformanceReviewResponse>>> getEmployeePerformanceHistory(
+            @PathVariable("id") UUID id,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "reviewDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            PerformanceReviewFilterRequest filterRequest
+    ) {
+        PaginatedResponse<ListPerformanceReviewResponse> responseList =
+                performanceReviewService.getPerformanceReviewsByEmployee(id, page, size, sortBy, sortDirection, filterRequest);
+        return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", responseList));
     }
 
 
@@ -94,7 +113,7 @@ public class PerformanceReviewController {
     public ResponseEntity<ApiResponse<PerformanceReviewDetailResponse>> createReview(
             @Valid @RequestBody PerformanceReviewCreateRequest createRequest,
             @AuthenticationPrincipal UserDetails userDetails
-            ){
+    ) {
         String email = userDetails.getUsername();
         PerformanceReviewDetailResponse created = performanceReviewService.createPerformanceReview(createRequest, email);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -113,7 +132,7 @@ public class PerformanceReviewController {
             @Valid @RequestBody PerformanceReviewUpdateRequest updateRequest,
             @AuthenticationPrincipal UserDetails currentUser) {
         String reviewerEmail = currentUser.getUsername();
-        PerformanceReviewDetailResponse updated =  performanceReviewService.updatePerformanceReview(id, updateRequest, reviewerEmail);
+        PerformanceReviewDetailResponse updated = performanceReviewService.updatePerformanceReview(id, updateRequest, reviewerEmail);
         return ResponseEntity.ok(ApiResponse.success("Performance review updated successfully", updated));
     }
 

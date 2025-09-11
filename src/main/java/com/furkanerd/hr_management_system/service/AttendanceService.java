@@ -29,5 +29,5 @@ public interface AttendanceService {
 
     void deleteAttendance(UUID id);
 
-    PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id, int page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest);
+    PaginatedResponse<ListAttendanceResponse> getAllAttendanceByEmployee(UUID id, int page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest);
 }

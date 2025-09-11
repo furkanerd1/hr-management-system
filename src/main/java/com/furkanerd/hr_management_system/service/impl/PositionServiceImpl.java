@@ -39,7 +39,7 @@ class PositionServiceImpl implements PositionService {
         String validatedSortBy = SortFieldValidator.validate("position",sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
-        Specification<Position> specification = PositionSpecification.withFilters(filterRequest);;
+        Specification<Position> specification = PositionSpecification.withFilters(filterRequest);
 
         Page<Position> positionPage = positionRepository.findAll(specification,pageable);
         List<ListPositionResponse> responseList = positionMapper.positionsToListPositionResponses(positionPage.getContent());

@@ -21,5 +21,5 @@ public interface SalaryService {
 
     void deleteSalary(UUID id);
 
-    PaginatedResponse<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId, int page, int size, String sortBy, String sortDirection, SalaryFilterRequest filterRequest);
+    PaginatedResponse<ListSalaryResponse> getSalaryHistoryByEmployee(UUID employeeId, int page, int size, String sortBy, String sortDirection, SalaryFilterRequest filterRequest);
 }
