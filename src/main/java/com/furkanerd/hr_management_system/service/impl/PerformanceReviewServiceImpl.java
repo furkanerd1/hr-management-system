@@ -1,7 +1,7 @@
 package com.furkanerd.hr_management_system.service.impl;
 
+import com.furkanerd.hr_management_system.constants.SortFieldConstants;
 import com.furkanerd.hr_management_system.exception.*;
-import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.PerformanceReviewMapper;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewFilterRequest;
@@ -33,18 +33,16 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
     private final PerformanceReviewRepository performanceReviewRepository;
     private final EmployeeRepository employeeRepository;
     private final PerformanceReviewMapper performanceReviewMapper;
-    private final EmployeeDomainService employeeDomainService;
 
-    public PerformanceReviewServiceImpl(PerformanceReviewRepository performanceReviewRepository, EmployeeRepository employeeRepository, PerformanceReviewMapper performanceReviewMapper, EmployeeDomainService employeeDomainService) {
+    public PerformanceReviewServiceImpl(PerformanceReviewRepository performanceReviewRepository, EmployeeRepository employeeRepository, PerformanceReviewMapper performanceReviewMapper) {
         this.performanceReviewRepository = performanceReviewRepository;
         this.employeeRepository = employeeRepository;
         this.performanceReviewMapper = performanceReviewMapper;
-        this.employeeDomainService = employeeDomainService;
     }
 
     @Override
     public PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("performanceReview", sortBy);
+        String validatedSortBy = SortFieldValidator.validate(SortFieldConstants.PERFORMANCE_REVIEW_SORT_FIELD, sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<PerformanceReview> specification = PerformanceReviewSpecification.withFilters(filterRequest);
@@ -72,7 +70,7 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
     @Override
     public PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("performanceReview", sortBy);
+        String validatedSortBy = SortFieldValidator.validate(SortFieldConstants.PERFORMANCE_REVIEW_SORT_FIELD, sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<PerformanceReview> baseSpec = PerformanceReviewSpecification.withFilters(filterRequest);
@@ -97,9 +95,9 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
     @Transactional
     public PerformanceReviewDetailResponse createPerformanceReview(PerformanceReviewCreateRequest createRequest, String email) {
 
-        Employee employee = employeeDomainService.getEmployeeById(createRequest.employeeId());
+        Employee employee = employeeRepository.findById(createRequest.employeeId()).orElseThrow(() -> new EmployeeNotFoundException(createRequest.employeeId()));
 
-        Employee reviewer = employeeDomainService.getEmployeeByEmail(email);
+        Employee reviewer = employeeRepository.findByEmail(email).orElseThrow(() -> new EmployeeNotFoundException(email));
 
         if (employee.getId().equals(reviewer.getId())) {
             throw new SelfReviewNotAllowedException("Employee cannot review themselves");
@@ -129,7 +127,7 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
         PerformanceReview performanceReview = performanceReviewRepository.findById(id)
                 .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :" + id));
 
-        Employee reviewer = employeeDomainService.getEmployeeByEmail(reviewerEmail);
+        Employee reviewer =  employeeRepository.findByEmail(reviewerEmail).orElseThrow(() -> new EmployeeNotFoundException(reviewerEmail));
 
 
         if (!performanceReview.getReviewer().getId().equals(reviewer.getId())) {
@@ -150,7 +148,7 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
     @Transactional
     public void deletePerformanceReview(UUID id, String reviewerEmail) {
-        Employee reviewer = employeeDomainService.getEmployeeByEmail(reviewerEmail);
+        Employee reviewer = employeeRepository.findByEmail(reviewerEmail).orElseThrow(() -> new EmployeeNotFoundException(reviewerEmail));
         PerformanceReview performanceReview = performanceReviewRepository.findById(id)
                 .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :" + id));
 
@@ -169,7 +167,7 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
             throw new EmployeeNotFoundException(employeeId);
         }
 
-        String validatedSortBy = SortFieldValidator.validate("performanceReview", sortBy);
+        String validatedSortBy = SortFieldValidator.validate(SortFieldConstants.PERFORMANCE_REVIEW_SORT_FIELD, sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<PerformanceReview> baseSpecification = PerformanceReviewSpecification.withFilters(filterRequest);

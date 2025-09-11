@@ -1,5 +1,6 @@
 package com.furkanerd.hr_management_system.service.impl;
 
+import com.furkanerd.hr_management_system.constants.SortFieldConstants;
 import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
 import com.furkanerd.hr_management_system.mapper.DepartmentMapper;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentCreateRequest;
@@ -37,7 +38,7 @@ class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public PaginatedResponse<ListDepartmentResponse> listAllDepartments(int page, int size, String sortBy, String sortDirection, DepartmentFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("department", sortBy);
+        String validatedSortBy = SortFieldValidator.validate(SortFieldConstants.DEPARTMENT_SORT_FIELD, sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Department> specification = DepartmentSpecification.withFilters(filterRequest);

@@ -1,5 +1,6 @@
 package com.furkanerd.hr_management_system.service.impl;
 
+import com.furkanerd.hr_management_system.constants.SortFieldConstants;
 import com.furkanerd.hr_management_system.exception.PositionNotFoundException;
 import com.furkanerd.hr_management_system.mapper.PositionMapper;
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionCreateRequest;
@@ -36,7 +37,7 @@ class PositionServiceImpl implements PositionService {
 
     @Override
     public PaginatedResponse<ListPositionResponse> listAllPositions(int page, int size, String sortBy, String sortDirection, PositionFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("position",sortBy);
+        String validatedSortBy = SortFieldValidator.validate(SortFieldConstants.POSITION_SORT_FIELD,sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
 
         Specification<Position> specification = PositionSpecification.withFilters(filterRequest);

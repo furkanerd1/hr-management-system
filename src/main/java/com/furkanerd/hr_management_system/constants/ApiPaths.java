@@ -1,7 +1,6 @@
-package com.furkanerd.hr_management_system.config;
+package com.furkanerd.hr_management_system.constants;
 
 public class ApiPaths {
-
     public static final String API_VERSION= "/api/v1";
     public static final String DEPARTMENTS= API_VERSION+"/departments";
     public static final String  POSITIONS = API_VERSION+"/positions";
@@ -11,4 +10,6 @@ public class ApiPaths {
     public static final String AUTH= API_VERSION+"/auth";
     public static final String PERFORMANCE_REVIEWS = API_VERSION+"/performance-reviews";
     public static final String EMPLOYEES= API_VERSION+"/employees";
+
+    private ApiPaths(){}
 }
