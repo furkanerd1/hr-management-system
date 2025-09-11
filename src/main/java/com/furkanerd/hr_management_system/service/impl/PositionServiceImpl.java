@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class PositionServiceImpl implements PositionService {
+class PositionServiceImpl implements PositionService {
 
     private final PositionRepository positionRepository;
     private final PositionMapper positionMapper;

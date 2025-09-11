@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class PerformanceReviewServiceImpl implements PerformanceReviewService {
+class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
     private final PerformanceReviewRepository performanceReviewRepository;
     private final PerformanceReviewMapper performanceReviewMapper;

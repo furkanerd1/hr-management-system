@@ -31,7 +31,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
-public class AuthServiceImpl implements AuthService {
+class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
