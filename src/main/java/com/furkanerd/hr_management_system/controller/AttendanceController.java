@@ -41,14 +41,14 @@ public class AttendanceController {
     )
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getAttendance(
-            @RequestParam(defaultValue = "0") @Min(0) int page ,
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getAllAttendances(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection,
             AttendanceFilterRequest filterRequest
-    ){
-        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.listAllAttendance(page,size,sortBy,sortDirection,filterRequest);
+    ) {
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.listAllAttendance(page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Attendance records retrieved successfully", responseList));
     }
 
@@ -94,7 +94,7 @@ public class AttendanceController {
     )
     @PostMapping("/check-out")
     @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
-    public ResponseEntity<ApiResponse<AttendanceDetailResponse>>  checkOut(@AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<ApiResponse<AttendanceDetailResponse>> checkOut(@AuthenticationPrincipal UserDetails currentUser) {
         String employeeEmail = currentUser.getUsername();
         AttendanceDetailResponse checkedOut = attendanceService.autoCheckOut(employeeEmail);
         return ResponseEntity.ok(ApiResponse.success("Check-out successful", checkedOut));
@@ -110,7 +110,7 @@ public class AttendanceController {
     public ResponseEntity<ApiResponse<AttendanceDetailResponse>> updateAttendance(
             @PathVariable UUID id,
             @Valid @RequestBody AttendanceUpdateRequest updateRequest
-    ){
+    ) {
         AttendanceDetailResponse updated = attendanceService.updateAttendance(id, updateRequest);
         return ResponseEntity.ok(ApiResponse.success("Attendance record updated successfully", updated));
     }
@@ -124,15 +124,35 @@ public class AttendanceController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getMyAttendances(
             @AuthenticationPrincipal UserDetails currentUser,
-            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "date") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection,
             AttendanceFilterRequest filterRequest
-    ){
+    ) {
         String employeeEmail = currentUser.getUsername();
-        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.getAttendanceByEmployee(employeeEmail,page,size,sortBy,sortDirection,filterRequest);
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.getAttendanceByEmployee(employeeEmail, page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("My attendance records retrieved successfully", responseList));
+    }
+
+    @Operation(
+            summary = "Get employee attendance history",
+            description = "Retrieves the attendance history for a specific employee by ID. Accessible only to HR and Manager roles."
+    )
+    @GetMapping("/employee/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListAttendanceResponse>>> getEmployeeAttendanceHistory(
+            @PathVariable("id") UUID id,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            AttendanceFilterRequest filterRequest
+    ) {
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService
+                .getAllAttendanceByEmployee(id, page, size, sortBy, sortDirection, filterRequest);
+
+        return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
     @Operation(

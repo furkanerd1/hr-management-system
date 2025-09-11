@@ -1,19 +1,18 @@
 package com.furkanerd.hr_management_system.service.impl;
 
-import com.furkanerd.hr_management_system.exception.InsufficientLeaveBalanceException;
-import com.furkanerd.hr_management_system.exception.LeaveRequestAlreadyProcessedException;
-import com.furkanerd.hr_management_system.exception.LeaveRequestNotFoundException;
-import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
+import com.furkanerd.hr_management_system.exception.*;
 import com.furkanerd.hr_management_system.mapper.LeaveRequestMapper;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
+import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.LeaveRequest;
 import com.furkanerd.hr_management_system.model.enums.LeaveStatusEnum;
+import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.repository.LeaveRequestRepository;
 import com.furkanerd.hr_management_system.service.EmployeeService;
 import com.furkanerd.hr_management_system.service.LeaveRequestService;
@@ -36,20 +35,21 @@ import java.util.UUID;
 class LeaveRequestServiceImpl implements LeaveRequestService {
 
     private final LeaveRequestRepository leaveRequestRepository;
+    private final EmployeeRepository employeeRepository;
     private final LeaveRequestMapper leaveRequestMapper;
     private final EmployeeService employeeService;
 
-    public LeaveRequestServiceImpl(LeaveRequestRepository leaveRequestRepository,LeaveRequestMapper leaveRequestMapper, EmployeeService employeeService) {
+    public LeaveRequestServiceImpl(LeaveRequestRepository leaveRequestRepository, EmployeeRepository employeeRepository, LeaveRequestMapper leaveRequestMapper, EmployeeService employeeService) {
         this.leaveRequestRepository = leaveRequestRepository;
+        this.employeeRepository = employeeRepository;
         this.leaveRequestMapper = leaveRequestMapper;
         this.employeeService = employeeService;
     }
 
     @Override
     public PaginatedResponse<ListLeaveRequestResponse> listAllLeaveRequests(int page, int size, String sortBy, String sortDirection, LeaveRequestFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("leaveRequest",sortBy);
+        String validatedSortBy = SortFieldValidator.validate("leaveRequest", sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
-
 
         Specification<LeaveRequest> spec = LeaveRequestSpecification.withFilters(filterRequest);
 
@@ -74,8 +74,8 @@ class LeaveRequestServiceImpl implements LeaveRequestService {
     }
 
     @Override
-    public PaginatedResponse<ListLeaveRequestResponse> getMyLeaveRequests(String email,int page,int size, String sortBy,String sortDirection,LeaveRequestFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("leaveRequest",sortBy);
+    public PaginatedResponse<ListLeaveRequestResponse> getMyLeaveRequests(String email, int page, int size, String sortBy, String sortDirection, LeaveRequestFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("leaveRequest", sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<LeaveRequest> baseSpec = LeaveRequestSpecification.withFilters(filterRequest);
@@ -85,7 +85,7 @@ class LeaveRequestServiceImpl implements LeaveRequestService {
                 : (root, query, cb) -> cb.equal(root.get("employee").get("email"), email);
 
 
-        Page<LeaveRequest> leaveRequestPage = leaveRequestRepository.findAll(specification,pageable);
+        Page<LeaveRequest> leaveRequestPage = leaveRequestRepository.findAll(specification, pageable);
         List<ListLeaveRequestResponse> responseList = leaveRequestMapper.leaveRequestsToListLeaveRequestResponse(leaveRequestPage.getContent());
 
         return PaginatedResponse.of(
@@ -98,11 +98,11 @@ class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     @Transactional
-    public LeaveRequestDetailResponse createLeaveRequest(LeaveRequestCreateRequest createRequest , String email) {
+    public LeaveRequestDetailResponse createLeaveRequest(LeaveRequestCreateRequest createRequest, String email) {
 
         Employee requester = employeeService.getEmployeeEntityByEmail(email);
 
-        int totalDays = (int) ChronoUnit.DAYS.between(createRequest.startDate(),createRequest.endDate()) + 1;
+        int totalDays = (int) ChronoUnit.DAYS.between(createRequest.startDate(), createRequest.endDate()) + 1;
 
         switch (createRequest.leaveType()) {
             case VACATION -> {
@@ -114,8 +114,6 @@ class LeaveRequestServiceImpl implements LeaveRequestService {
                 if (requester.getMaternityBalance() < totalDays) {
                     throw new InsufficientLeaveBalanceException("Employee does not have enough maternity leave days.");
                 }
-            }
-            case SICK, UNPAID -> {
             }
         }
 
@@ -141,7 +139,7 @@ class LeaveRequestServiceImpl implements LeaveRequestService {
             throw new UnauthorizedActionException("You can only edit your own leave request");
         }
 
-        if(!leaveRequest.getStatus().equals(LeaveStatusEnum.PENDING)){
+        if (!leaveRequest.getStatus().equals(LeaveStatusEnum.PENDING)) {
             throw new UnauthorizedActionException("It is not possible to edit leave request");
         }
 
@@ -155,14 +153,14 @@ class LeaveRequestServiceImpl implements LeaveRequestService {
 
     @Override
     @Transactional
-    public LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId,String approverEmail) {
+    public LeaveRequestDetailResponse approveLeaveRequest(UUID leaveRequestId, String approverEmail) {
 
         Employee approver = employeeService.getEmployeeEntityByEmail(approverEmail);
 
         LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
                 .orElseThrow(() -> new LeaveRequestNotFoundException("Leave request not found: " + leaveRequestId));
 
-        if(!leaveRequest.getStatus().equals(LeaveStatusEnum.PENDING)) {
+        if (!leaveRequest.getStatus().equals(LeaveStatusEnum.PENDING)) {
             throw new LeaveRequestAlreadyProcessedException(leaveRequestId, leaveRequest.getStatus());
         }
 
@@ -231,4 +229,18 @@ class LeaveRequestServiceImpl implements LeaveRequestService {
 
         leaveRequestRepository.delete(leaveRequest);
     }
+
+    @Override
+    public EmployeeLeaveBalanceResponse getMyLeaveBalance(String email) {
+        Employee employee = employeeRepository.findByEmail(email).orElseThrow(() -> new EmployeeNotFoundException(email));
+        return leaveRequestMapper.toEmployeeLeaveBalanceResponse(employee);
+    }
+
+    @Override
+    public EmployeeLeaveBalanceResponse getEmployeeLeaveBalance(UUID employeeId) {
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + employeeId));
+        return leaveRequestMapper.toEmployeeLeaveBalanceResponse(employee);
+    }
+
+
 }

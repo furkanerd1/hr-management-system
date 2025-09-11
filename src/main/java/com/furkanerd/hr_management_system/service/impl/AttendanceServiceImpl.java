@@ -12,6 +12,7 @@ import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAtte
 import com.furkanerd.hr_management_system.model.entity.Attendance;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.repository.AttendanceRepository;
+import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.service.AttendanceService;
 import com.furkanerd.hr_management_system.specification.AttendanceSpecification;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
@@ -32,11 +33,13 @@ import java.util.UUID;
 class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
+    private final EmployeeRepository employeeRepository;
     private final AttendanceMapper attendanceMapper;
     private final EmployeeDomainService employeeDomainService;
 
-    public AttendanceServiceImpl(AttendanceRepository attendanceRepository, AttendanceMapper attendanceMapper, EmployeeDomainService employeeDomainService) {
+    public AttendanceServiceImpl(AttendanceRepository attendanceRepository, EmployeeRepository employeeRepository, AttendanceMapper attendanceMapper, EmployeeDomainService employeeDomainService) {
         this.attendanceRepository = attendanceRepository;
+        this.employeeRepository = employeeRepository;
         this.attendanceMapper = attendanceMapper;
         this.employeeDomainService = employeeDomainService;
     }
@@ -46,13 +49,13 @@ class AttendanceServiceImpl implements AttendanceService {
     private static final LocalTime CHECK_IN_END_TIME = LocalTime.of(10, 0);
 
     @Override
-    public PaginatedResponse<ListAttendanceResponse> listAllAttendance(int page,int size, String sortBy,String sortDirection,AttendanceFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("attendance",sortBy);
-        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
+    public PaginatedResponse<ListAttendanceResponse> listAllAttendance(int page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("attendance", sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Attendance> specification = AttendanceSpecification.withFilters(filterRequest);
 
-        Page<Attendance> attendancePage = attendanceRepository.findAll(specification,pageable);
+        Page<Attendance> attendancePage = attendanceRepository.findAll(specification, pageable);
         List<ListAttendanceResponse> responseList = attendanceMapper.attendancesToListAttendanceResponse(attendancePage.getContent());
         return PaginatedResponse.of(
                 responseList,
@@ -74,7 +77,7 @@ class AttendanceServiceImpl implements AttendanceService {
     public AttendanceDetailResponse createAttendance(AttendanceCreateRequest createRequest) {
         Employee employee = employeeDomainService.getEmployeeById(createRequest.employeeId());
 
-        if (attendanceRepository.existsByEmployeeIdAndDate(createRequest.employeeId(),createRequest.date())){
+        if (attendanceRepository.existsByEmployeeIdAndDate(createRequest.employeeId(), createRequest.date())) {
             throw new AttendanceAlreadyExistsException(createRequest.employeeId(), createRequest.date());
         }
 
@@ -84,7 +87,7 @@ class AttendanceServiceImpl implements AttendanceService {
             validateCheckOutTime(createRequest.checkInTime(), createRequest.checkOutTime());
         }
 
-        Attendance attendance= Attendance.builder()
+        Attendance attendance = Attendance.builder()
                 .employee(employee)
                 .date(createRequest.date())
                 .checkInTime(createRequest.checkInTime())
@@ -124,7 +127,7 @@ class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional
     public AttendanceDetailResponse autoCheckOut(String employeeEmail) {
-        Employee employee =  employeeDomainService.getEmployeeByEmail(employeeEmail);
+        Employee employee = employeeDomainService.getEmployeeByEmail(employeeEmail);
         LocalDate today = LocalDate.now();
         Attendance attendance = attendanceRepository.findByEmployeeIdAndDate(employee.getId(), today)
                 .orElseThrow(() -> new AttendanceNotFoundException("No attendance found for today " + employee.getId()));
@@ -165,10 +168,10 @@ class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail,int page,int size,String sortBy,String sortDirection,AttendanceFilterRequest filterRequest) {
-        Employee employee =   employeeDomainService.getEmployeeByEmail(employeeEmail);
+    public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployee(String employeeEmail, int page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest) {
+        Employee employee = employeeDomainService.getEmployeeByEmail(employeeEmail);
 
-        String validatedSortBy = SortFieldValidator.validate("attendance",sortBy);
+        String validatedSortBy = SortFieldValidator.validate("attendance", sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Attendance> baseSpec = AttendanceSpecification.withFilters(filterRequest);
@@ -196,8 +199,13 @@ class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public PaginatedResponse<ListAttendanceResponse> getAttendanceByEmployeeId(UUID id, int page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("attendance",sortBy);
+    public PaginatedResponse<ListAttendanceResponse> getAllAttendanceByEmployee(UUID id, int page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest) {
+        boolean exists = employeeRepository.existsById(id);
+        if (!exists) {
+            throw new EmployeeNotFoundException(id);
+        }
+
+        String validatedSortBy = SortFieldValidator.validate("attendance", sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Attendance> baseSpec = AttendanceSpecification.withFilters(filterRequest);
@@ -219,6 +227,7 @@ class AttendanceServiceImpl implements AttendanceService {
 
     /**
      * Checks if check-in time is within valid range
+     *
      * @param time time to check
      * @return true if valid, false otherwise
      */
@@ -228,6 +237,7 @@ class AttendanceServiceImpl implements AttendanceService {
 
     /**
      * Checks if the check-in time is valid (between 06:00-10:00)
+     *
      * @param time time to check
      */
     private void validateCheckInTime(LocalTime time) {
@@ -238,7 +248,8 @@ class AttendanceServiceImpl implements AttendanceService {
 
     /**
      * Checks: Has at least the minimum working time passed between check-in and check-out times?
-     * @param checkInTime Check-in time
+     *
+     * @param checkInTime  Check-in time
      * @param checkOutTime Check-out time
      * @return True if the minimum working time has passed, false otherwise
      */
@@ -250,7 +261,8 @@ class AttendanceServiceImpl implements AttendanceService {
 
     /**
      * Checks if the check-out time is valid
-     * @param checkInTime Check-in time
+     *
+     * @param checkInTime  Check-in time
      * @param checkOutTime Check-out time
      */
     private void validateCheckOutTime(LocalTime checkInTime, LocalTime checkOutTime) {

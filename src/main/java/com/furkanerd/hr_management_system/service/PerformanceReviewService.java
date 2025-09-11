@@ -23,5 +23,5 @@ public interface PerformanceReviewService {
 
     void deletePerformanceReview(UUID id, String reviewerEmail);
 
-    PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest);
+    PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewsByEmployee(UUID employeeId, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest);
 }

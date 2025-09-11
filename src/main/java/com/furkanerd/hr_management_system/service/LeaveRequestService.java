@@ -4,6 +4,7 @@ import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRe
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
+import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
 
@@ -27,4 +28,8 @@ public interface LeaveRequestService {
     LeaveRequestDetailResponse rejectLeaveRequest(UUID leaveRequestId, String approverEmail);
 
     void cancelLeaveRequest(UUID leaveRequestId, String requesterEmail);
+
+    EmployeeLeaveBalanceResponse getMyLeaveBalance(String email);
+
+    EmployeeLeaveBalanceResponse getEmployeeLeaveBalance(UUID employeeId);
 }

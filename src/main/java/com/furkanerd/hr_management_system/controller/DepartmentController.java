@@ -3,12 +3,10 @@ package com.furkanerd.hr_management_system.controller;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentUpdateRequest;
-import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.DepartmentDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.department.ListDepartmentResponse;
-import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.service.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,14 +40,14 @@ public class DepartmentController {
     )
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
-    public  ResponseEntity<ApiResponse<PaginatedResponse<ListDepartmentResponse>>> getAllDepartments(
-            @RequestParam(defaultValue = "0") @Min(0) int page ,
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListDepartmentResponse>>> getAllDepartments(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection,
             DepartmentFilterRequest filterRequest
-    ){
-        PaginatedResponse<ListDepartmentResponse> departments = departmentService.listAllDepartments(page,size,sortBy,sortDirection,filterRequest);
+    ) {
+        PaginatedResponse<ListDepartmentResponse> departments = departmentService.listAllDepartments(page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Departments retrieved successfully", departments));
     }
 
@@ -65,30 +63,12 @@ public class DepartmentController {
     }
 
     @Operation(
-            summary = "Get all employees for a department",
-            description = "Retrieves a list of all employees working in a specific department. Accessible to HR and Manager roles."
-    )
-    @GetMapping("/{id}/employees")
-    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
-    public ResponseEntity<ApiResponse<PaginatedResponse<ListEmployeeResponse>>> getEmployeesByDepartment(
-            @PathVariable("id") UUID departmentId,
-            @RequestParam(defaultValue = "0") @Min(0) int page ,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-            @RequestParam(defaultValue = "firstName") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection,
-            EmployeeFilterRequest filterRequest
-    ){
-        PaginatedResponse<ListEmployeeResponse> responseList = departmentService.getEmployeesByDepartment(departmentId,page,size,sortBy,sortDirection,filterRequest);
-        return ResponseEntity.ok(ApiResponse.success("Employees retrieved for department successfully", responseList));
-    }
-
-    @Operation(
             summary = "Create a new department",
             description = "Creates a new department in the system. This action is restricted to users with the HR role."
     )
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_HR')")
-    public ResponseEntity<ApiResponse<DepartmentDetailResponse>> createDepartment(@Valid @RequestBody DepartmentCreateRequest departmentCreateRequest){
+    public ResponseEntity<ApiResponse<DepartmentDetailResponse>> createDepartment(@Valid @RequestBody DepartmentCreateRequest departmentCreateRequest) {
         DepartmentDetailResponse created = departmentService.createDepartment(departmentCreateRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Department created successfully", created));
@@ -101,8 +81,8 @@ public class DepartmentController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_HR')")
     public ResponseEntity<ApiResponse<DepartmentDetailResponse>> updateDepartment(
-            @PathVariable("id") UUID departmentId ,
-            @Valid @RequestBody DepartmentUpdateRequest departmentUpdateRequest){
+            @PathVariable("id") UUID departmentId,
+            @Valid @RequestBody DepartmentUpdateRequest departmentUpdateRequest) {
         DepartmentDetailResponse updated = departmentService.updateDepartment(departmentId, departmentUpdateRequest);
         return ResponseEntity.ok(ApiResponse.success("Department updated successfully", updated));
     }
@@ -113,7 +93,7 @@ public class DepartmentController {
     )
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_HR')")
-    public ResponseEntity<ApiResponse<Void>> deleteDepartment(@PathVariable("id") UUID departmentId){
+    public ResponseEntity<ApiResponse<Void>> deleteDepartment(@PathVariable("id") UUID departmentId) {
         departmentService.deleteDepartment(departmentId);
         return ResponseEntity.ok(ApiResponse.success("Department deleted successfully"));
     }

@@ -1,7 +1,6 @@
 package com.furkanerd.hr_management_system.mapper;
 
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
-import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import org.mapstruct.Mapper;
@@ -25,9 +24,6 @@ public interface EmployeeMapper {
     @Mapping(target = "positionTitle",source = "employee.position.title")
     @Mapping(target = "managerFullName",expression = "java(getManagerFullName(employee))")
     EmployeeDetailResponse  toEmployeeDetailResponse(Employee employee);
-
-    @Mapping(target = "employeeId",source = "id")
-    EmployeeLeaveBalanceResponse toEmployeeLeaveBalanceResponse(Employee employee);
 
     default String getEmployeeFullName(Employee employee) {
         return employee.getFirstName() + " " + employee.getLastName();

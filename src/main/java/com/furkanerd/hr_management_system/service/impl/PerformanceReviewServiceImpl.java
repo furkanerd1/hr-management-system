@@ -1,9 +1,6 @@
 package com.furkanerd.hr_management_system.service.impl;
 
-import com.furkanerd.hr_management_system.exception.InvalidReviewDateException;
-import com.furkanerd.hr_management_system.exception.PerformanceReviewNotFoundException;
-import com.furkanerd.hr_management_system.exception.SelfReviewNotAllowedException;
-import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
+import com.furkanerd.hr_management_system.exception.*;
 import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.PerformanceReviewMapper;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
@@ -14,7 +11,7 @@ import com.furkanerd.hr_management_system.model.dto.response.performancereview.L
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
-import com.furkanerd.hr_management_system.model.entity.Salary;
+import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.repository.PerformanceReviewRepository;
 import com.furkanerd.hr_management_system.service.PerformanceReviewService;
 import com.furkanerd.hr_management_system.specification.PerformanceReviewSpecification;
@@ -34,25 +31,27 @@ import java.util.UUID;
 class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
     private final PerformanceReviewRepository performanceReviewRepository;
+    private final EmployeeRepository employeeRepository;
     private final PerformanceReviewMapper performanceReviewMapper;
-    private final EmployeeDomainService  employeeDomainService;
+    private final EmployeeDomainService employeeDomainService;
 
-    public PerformanceReviewServiceImpl(PerformanceReviewRepository performanceReviewRepository, PerformanceReviewMapper performanceReviewMapper,EmployeeDomainService employeeDomainService) {
+    public PerformanceReviewServiceImpl(PerformanceReviewRepository performanceReviewRepository, EmployeeRepository employeeRepository, PerformanceReviewMapper performanceReviewMapper, EmployeeDomainService employeeDomainService) {
         this.performanceReviewRepository = performanceReviewRepository;
+        this.employeeRepository = employeeRepository;
         this.performanceReviewMapper = performanceReviewMapper;
         this.employeeDomainService = employeeDomainService;
     }
 
     @Override
-    public PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page,int size,String sortBy,String sortDirection,PerformanceReviewFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("performanceReview",sortBy);
-        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
+    public PaginatedResponse<ListPerformanceReviewResponse> listAllPerformanceReviews(int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("performanceReview", sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<PerformanceReview> specification = PerformanceReviewSpecification.withFilters(filterRequest);
 
-       Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAll(specification,pageable);
-       List<ListPerformanceReviewResponse>  responseList = performanceReviewMapper
-               .performanceReviewsToListPerformanceReviewListResponse(performanceReviewPage.getContent());
+        Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAll(specification, pageable);
+        List<ListPerformanceReviewResponse> responseList = performanceReviewMapper
+                .performanceReviewsToListPerformanceReviewListResponse(performanceReviewPage.getContent());
 
         return PaginatedResponse.of(
                 responseList,
@@ -66,15 +65,15 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
     public PerformanceReviewDetailResponse getPerformanceReview(UUID id) {
 
         PerformanceReview performanceReview = performanceReviewRepository.findById(id)
-                .orElseThrow(() -> new PerformanceReviewNotFoundException("performance review not found with id :"+ id));
+                .orElseThrow(() -> new PerformanceReviewNotFoundException("performance review not found with id :" + id));
 
-        return  performanceReviewMapper.performanceReviewToPerformanceReviewDetailResponse(performanceReview);
+        return performanceReviewMapper.performanceReviewToPerformanceReviewDetailResponse(performanceReview);
     }
 
     @Override
-    public PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email,int page,int size,String sortBy,String sortDirection,PerformanceReviewFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("performanceReview",sortBy);
-        Pageable pageable = PaginationUtils.buildPageable(page,size,validatedSortBy,sortDirection);
+    public PaginatedResponse<ListPerformanceReviewResponse> getMyPerformanceReviews(String email, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("performanceReview", sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<PerformanceReview> baseSpec = PerformanceReviewSpecification.withFilters(filterRequest);
 
@@ -82,8 +81,8 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
                 ? baseSpec.and((root, query, cb) -> cb.equal(root.get("employee").get("email"), email))
                 : (root, query, cb) -> cb.equal(root.get("employee").get("email"), email);
 
-        Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAll(specification,pageable);
-        List<ListPerformanceReviewResponse>  responseList = performanceReviewMapper
+        Page<PerformanceReview> performanceReviewPage = performanceReviewRepository.findAll(specification, pageable);
+        List<ListPerformanceReviewResponse> responseList = performanceReviewMapper
                 .performanceReviewsToListPerformanceReviewListResponse(performanceReviewPage.getContent());
 
         return PaginatedResponse.of(
@@ -100,7 +99,7 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
 
         Employee employee = employeeDomainService.getEmployeeById(createRequest.employeeId());
 
-        Employee reviewer= employeeDomainService.getEmployeeByEmail(email);
+        Employee reviewer = employeeDomainService.getEmployeeByEmail(email);
 
         if (employee.getId().equals(reviewer.getId())) {
             throw new SelfReviewNotAllowedException("Employee cannot review themselves");
@@ -128,12 +127,12 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
     public PerformanceReviewDetailResponse updatePerformanceReview(UUID id, PerformanceReviewUpdateRequest updateRequest, String reviewerEmail) {
 
         PerformanceReview performanceReview = performanceReviewRepository.findById(id)
-                .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :"+ id));
+                .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :" + id));
 
         Employee reviewer = employeeDomainService.getEmployeeByEmail(reviewerEmail);
 
 
-        if(!performanceReview.getReviewer().getId().equals(reviewer.getId())) {
+        if (!performanceReview.getReviewer().getId().equals(reviewer.getId())) {
             throw new UnauthorizedActionException("You can only update reviews you created");
         }
 
@@ -149,14 +148,13 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
         return performanceReviewMapper.performanceReviewToPerformanceReviewDetailResponse(performanceReviewRepository.save(performanceReview));
     }
 
-    @Override
     @Transactional
     public void deletePerformanceReview(UUID id, String reviewerEmail) {
-        Employee reviewer =  employeeDomainService.getEmployeeByEmail(reviewerEmail);
+        Employee reviewer = employeeDomainService.getEmployeeByEmail(reviewerEmail);
         PerformanceReview performanceReview = performanceReviewRepository.findById(id)
-                .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :"+ id));
+                .orElseThrow(() -> new PerformanceReviewNotFoundException("Performance review not found with id :" + id));
 
-        if(!performanceReview.getReviewer().getId().equals(reviewer.getId())) {
+        if (!performanceReview.getReviewer().getId().equals(reviewer.getId())) {
             throw new UnauthorizedActionException("You can only delete reviews you created");
         }
 
@@ -165,8 +163,13 @@ class PerformanceReviewServiceImpl implements PerformanceReviewService {
     }
 
     @Override
-    public PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewByEmployeeId(UUID employeeId, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("performanceReview",sortBy);
+    public PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewsByEmployee(UUID employeeId, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest) {
+        boolean exists = employeeRepository.existsById(employeeId);
+        if (!exists) {
+            throw new EmployeeNotFoundException(employeeId);
+        }
+
+        String validatedSortBy = SortFieldValidator.validate("performanceReview", sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<PerformanceReview> baseSpecification = PerformanceReviewSpecification.withFilters(filterRequest);

@@ -1,7 +1,9 @@
 package com.furkanerd.hr_management_system.mapper;
 
+import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
+import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.LeaveRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -25,6 +27,9 @@ public interface LeaveRequestMapper {
     @Mapping(target = "positionName",source = "leaveRequest.employee.position.title")
     @Mapping(target = "approverName", expression = "java(getApproverFullName(leaveRequest))")
     LeaveRequestDetailResponse leaveRequestToLeaveRequestDetailResponse(LeaveRequest leaveRequest);
+
+    @Mapping(target = "employeeId",source = "id")
+    EmployeeLeaveBalanceResponse toEmployeeLeaveBalanceResponse(Employee employee);
 
     default String getFullName(LeaveRequest leaveRequest) {
         return leaveRequest.getEmployee().getFirstName() + " " + leaveRequest.getEmployee().getLastName();

@@ -1,5 +1,6 @@
 package com.furkanerd.hr_management_system.service.impl;
 
+import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
 import com.furkanerd.hr_management_system.exception.ResourceNotFoundException;
 import com.furkanerd.hr_management_system.helper.EmployeeDomainService;
 import com.furkanerd.hr_management_system.mapper.SalaryMapper;
@@ -8,12 +9,11 @@ import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryFilterR
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.model.dto.response.salary.SalaryDetailResponse;
-import com.furkanerd.hr_management_system.model.entity.Attendance;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.Salary;
+import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.repository.SalaryRepository;
 import com.furkanerd.hr_management_system.service.SalaryService;
-import com.furkanerd.hr_management_system.specification.AttendanceSpecification;
 import com.furkanerd.hr_management_system.specification.SalarySpecification;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
 import com.furkanerd.hr_management_system.util.SortFieldValidator;
@@ -32,21 +32,23 @@ class SalaryServiceImpl implements SalaryService {
     private final SalaryRepository salaryRepository;
     private final SalaryMapper salaryMapper;
     private final EmployeeDomainService employeeDomainService;
+    private final EmployeeRepository employeeRepository;
 
-    public SalaryServiceImpl(SalaryRepository salaryRepository, SalaryMapper salaryMapper, EmployeeDomainService employeeDomainService) {
+    public SalaryServiceImpl(SalaryRepository salaryRepository, SalaryMapper salaryMapper, EmployeeDomainService employeeDomainService, EmployeeRepository employeeRepository) {
         this.salaryRepository = salaryRepository;
         this.salaryMapper = salaryMapper;
         this.employeeDomainService = employeeDomainService;
+        this.employeeRepository = employeeRepository;
     }
 
     @Override
-    public PaginatedResponse<ListSalaryResponse> listAllSalaries(int page,int size,String sortBy,String sortDirection,SalaryFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("salary",sortBy);
+    public PaginatedResponse<ListSalaryResponse> listAllSalaries(int page, int size, String sortBy, String sortDirection, SalaryFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("salary", sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Salary> specification = SalarySpecification.withFilters(filterRequest);
 
-        Page<Salary> salaryPage = salaryRepository.findAll(specification,pageable);
+        Page<Salary> salaryPage = salaryRepository.findAll(specification, pageable);
         List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());
 
         return PaginatedResponse.of(
@@ -66,7 +68,7 @@ class SalaryServiceImpl implements SalaryService {
     @Override
     @Transactional
     public SalaryDetailResponse createSalary(SalaryCreateRequest createRequest) {
-        Employee employee =employeeDomainService.getEmployeeById(createRequest.employeeId());
+        Employee employee = employeeDomainService.getEmployeeById(createRequest.employeeId());
         Salary toCreate = Salary.builder()
                 .employee(employee)
                 .salary(createRequest.salary())
@@ -78,8 +80,8 @@ class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
-    public PaginatedResponse<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail,int page,int size,String sortBy,String sortDirection,SalaryFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("salary",sortBy);
+    public PaginatedResponse<ListSalaryResponse> showEmployeeSalaryHistory(String employeeEmail, int page, int size, String sortBy, String sortDirection, SalaryFilterRequest filterRequest) {
+        String validatedSortBy = SortFieldValidator.validate("salary", sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Salary> baseSpec = SalarySpecification.withFilters(filterRequest);
@@ -89,7 +91,7 @@ class SalaryServiceImpl implements SalaryService {
                 : (root, query, cb) -> cb.equal(root.get("employee").get("email"), employeeEmail);
 
 
-        Page<Salary> salaryPage = salaryRepository.findAll(specification,pageable);
+        Page<Salary> salaryPage = salaryRepository.findAll(specification, pageable);
         List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());
 
         return PaginatedResponse.of(
@@ -111,8 +113,13 @@ class SalaryServiceImpl implements SalaryService {
     }
 
     @Override
-    public PaginatedResponse<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId, int page, int size, String sortBy, String sortDirection, SalaryFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("salary",sortBy);
+    public PaginatedResponse<ListSalaryResponse> getSalaryHistoryByEmployee(UUID employeeId, int page, int size, String sortBy, String sortDirection, SalaryFilterRequest filterRequest) {
+        boolean exists = employeeRepository.existsById(employeeId);
+        if (!exists) {
+            throw new EmployeeNotFoundException(employeeId);
+        }
+
+        String validatedSortBy = SortFieldValidator.validate("salary", sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Salary> baseSpec = SalarySpecification.withFilters(filterRequest);
@@ -121,7 +128,7 @@ class SalaryServiceImpl implements SalaryService {
                 ? baseSpec.and((root, query, cb) -> cb.equal(root.get("employee").get("id"), employeeId))
                 : (root, query, cb) -> cb.equal(root.get("employee").get("id"), employeeId);
 
-        Page<Salary> salaryPage= salaryRepository.findAll(specification,pageable);
+        Page<Salary> salaryPage = salaryRepository.findAll(specification, pageable);
         List<ListSalaryResponse> responseList = salaryMapper.salariesToListSalaryResponses(salaryPage.getContent());
 
         return PaginatedResponse.of(

@@ -1,25 +1,20 @@
 package com.furkanerd.hr_management_system.service.impl;
 
 import com.furkanerd.hr_management_system.exception.CircularReferenceException;
+import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
 import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
 import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.mapper.EmployeeMapper;
-import com.furkanerd.hr_management_system.model.dto.request.attendance.AttendanceFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
-import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewFilterRequest;
-import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
-import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
-import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
-import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
-import com.furkanerd.hr_management_system.model.dto.response.salary.ListSalaryResponse;
 import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
+import com.furkanerd.hr_management_system.repository.DepartmentRepository;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.service.*;
 import com.furkanerd.hr_management_system.specification.EmployeeSpecification;
@@ -38,36 +33,33 @@ import java.util.UUID;
 class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
     private final EmployeeMapper employeeMapper;
     private final DepartmentService departmentService;
     private final PositionService positionService;
-    private final SalaryService salaryService;
-    private final PerformanceReviewService performanceReviewService;
-    private final AttendanceService attendanceService;
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository, EmployeeMapper employeeMapper, DepartmentService departmentService, PositionService positionService, SalaryService salaryService, PerformanceReviewService performanceReviewService, AttendanceService attendanceService) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository, EmployeeMapper employeeMapper, DepartmentService departmentService, PositionService positionService) {
         this.employeeRepository = employeeRepository;
+        this.departmentRepository = departmentRepository;
         this.employeeMapper = employeeMapper;
         this.departmentService = departmentService;
         this.positionService = positionService;
-        this.salaryService = salaryService;
-        this.performanceReviewService = performanceReviewService;
-        this.attendanceService = attendanceService;
     }
 
     @Override
     public EmployeeDetailResponse getEmployeeDetailByEmail(String email) {
-        Employee employee = getEmployeeEntityByEmail(email);        return employeeMapper.toEmployeeDetailResponse(employee);
+        Employee employee = getEmployeeEntityByEmail(email);
+        return employeeMapper.toEmployeeDetailResponse(employee);
     }
 
     @Override
     public PaginatedResponse<ListEmployeeResponse> listAllEmployees(int page, int size, String sortBy, String sortDirection, EmployeeFilterRequest filterRequest) {
-        String validatedSortBy = SortFieldValidator.validate("employee",sortBy);
+        String validatedSortBy = SortFieldValidator.validate("employee", sortBy);
         Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
         Specification<Employee> specification = EmployeeSpecification.withFilters(filterRequest);
 
-        Page<Employee> employeePage = employeeRepository.findAll(specification,pageable);
+        Page<Employee> employeePage = employeeRepository.findAll(specification, pageable);
         List<ListEmployeeResponse> responseList = employeeMapper.employeestoListEmployeeResponseList(employeePage.getContent());
 
         return PaginatedResponse.of(
@@ -82,7 +74,7 @@ class EmployeeServiceImpl implements EmployeeService {
     public EmployeeDetailResponse getEmployeeById(UUID id) {
         return employeeMapper.toEmployeeDetailResponse(
                 employeeRepository.findById(id)
-                        .orElseThrow(() ->  new EmployeeNotFoundException(id))
+                        .orElseThrow(() -> new EmployeeNotFoundException(id))
         );
     }
 
@@ -98,14 +90,13 @@ class EmployeeServiceImpl implements EmployeeService {
             throw new UnauthorizedActionException("Employees can only update their own profile");
         }
 
-        Department department =  departmentService.getDepartmentEntityById(updateRequest.departmentId());
-
-        Position position =  positionService.getPositionEntityById(updateRequest.positionId());
+        Department department = departmentService.getDepartmentEntityById(updateRequest.departmentId());
+        Position position = positionService.getPositionEntityById(updateRequest.positionId());
 
         Employee manager = null;
 
-        if(updateRequest.managerId() != null){
-            manager=getEmployeeEntityById(updateRequest.managerId());
+        if (updateRequest.managerId() != null) {
+            manager = getEmployeeEntityById(updateRequest.managerId());
 
             //  circular reference control
             if (isSubordinateOf(manager, toUpdate)) {
@@ -134,36 +125,29 @@ class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public PaginatedResponse<ListSalaryResponse> getEmployeeSalaryHistory(UUID employeeId, int page, int size, String sortedBy, String sortDirection, SalaryFilterRequest filterRequest) {
-        boolean exists = employeeRepository.existsById(employeeId);
-        if (!exists) {
-            throw new EmployeeNotFoundException(employeeId);
-        }
-        return salaryService.getEmployeeSalaryHistory(employeeId,page,size,sortedBy,sortDirection,filterRequest);
-    }
+    public PaginatedResponse<ListEmployeeResponse> getEmployeesByDepartment(UUID departmentId, int page, int size, String sortBy, String sortDirection, EmployeeFilterRequest filterRequest) {
+        departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new DepartmentNotFoundException(departmentId));
 
-    @Override
-    public PaginatedResponse<ListPerformanceReviewResponse> getPerformanceReviewsByEmployeeId(UUID employeeId, int page, int size, String sortBy, String sortDirection, PerformanceReviewFilterRequest filterRequest) {
-        boolean exists = employeeRepository.existsById(employeeId);
-         if (!exists) {
-             throw new EmployeeNotFoundException(employeeId);
-         }
-         return performanceReviewService.getPerformanceReviewByEmployeeId(employeeId, page, size, sortBy, sortDirection,filterRequest);
-    }
+        String validatedSortBy = SortFieldValidator.validate("employee", sortBy);
+        Pageable pageable = PaginationUtils.buildPageable(page, size, validatedSortBy, sortDirection);
 
-    @Override
-    public PaginatedResponse<ListAttendanceResponse> getAllAttendanceByEmployeeId(UUID id, int  page, int size, String sortBy, String sortDirection, AttendanceFilterRequest filterRequest) {
-        boolean exists = employeeRepository.existsById(id);
-        if (!exists) {
-            throw new EmployeeNotFoundException(id);
-        }
-        return attendanceService.getAttendanceByEmployeeId(id,page,size,sortBy,sortDirection,filterRequest);
-    }
+        Specification<Employee> specification = EmployeeSpecification.withFilters(filterRequest);
+        Specification<Employee> departmentIdSpec = (root, query, cb) -> cb.equal(root.get("department").get("id"), departmentId);
 
-    @Override
-    public EmployeeLeaveBalanceResponse getLeaveBalance(UUID employeeId) {
-        return employeeMapper.toEmployeeLeaveBalanceResponse(employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new EmployeeNotFoundException(employeeId)));
+        Specification<Employee> combinedSpec = (specification != null)
+                ? specification.and(departmentIdSpec)
+                : departmentIdSpec;
+
+        Page<Employee> employeePage = employeeRepository.findAll(combinedSpec, pageable);
+        List<ListEmployeeResponse> responseList = employeeMapper.employeestoListEmployeeResponseList(employeePage.getContent());
+
+        return PaginatedResponse.of(
+                responseList,
+                employeePage.getTotalElements(),
+                page,
+                size
+        );
     }
 
     @Override
@@ -183,23 +167,13 @@ class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
     }
 
-    @Override
-    public boolean emailExists(String email) {
-        return employeeRepository.existsByEmail(email);
-    }
-
-    @Override
-    public boolean phoneExists(String phone) {
-        return employeeRepository.existsByPhone(phone);
-    }
-
 
     /**
      * Checks whether the given subordinate is in the hierarchy of the manager.
      * This prevents the creation of a circular reference.
      *
      * @param subordinate The subordinate employee (potential new manager)
-     * @param manager The employee whose manager is being changed
+     * @param manager     The employee whose manager is being changed
      * @return true if the subordinate appears above in the manager's hierarchy, false otherwise
      */
     private boolean isSubordinateOf(Employee subordinate, Employee manager) {

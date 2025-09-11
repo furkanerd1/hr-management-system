@@ -41,14 +41,14 @@ public class SalaryController {
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_HR')")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListSalaryResponse>>> getSalaries(
-            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "effectiveDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection,
             SalaryFilterRequest filterRequest
 
-    ){
-        PaginatedResponse<ListSalaryResponse> responseList = salaryService.listAllSalaries(page,size,sortBy,sortDirection,filterRequest);
+    ) {
+        PaginatedResponse<ListSalaryResponse> responseList = salaryService.listAllSalaries(page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
@@ -59,8 +59,26 @@ public class SalaryController {
     )
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_HR')")
-    public ResponseEntity<ApiResponse<SalaryDetailResponse>> getSalary(@PathVariable("id") UUID id){
+    public ResponseEntity<ApiResponse<SalaryDetailResponse>> getSalary(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(ApiResponse.success(salaryService.getSalaryById(id)));
+    }
+
+    @Operation(
+            summary = "Get employee salary history",
+            description = "Retrieves the salary history for a specific employee by ID. Accessible only to HR and Manager roles."
+    )
+    @GetMapping("/employee/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
+    public ResponseEntity<ApiResponse<PaginatedResponse<ListSalaryResponse>>> getSalaryHistoryByEmployee(
+            @PathVariable("id") UUID id,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "effectiveDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            SalaryFilterRequest filterRequest
+    ) {
+        PaginatedResponse<ListSalaryResponse> responseList = salaryService.getSalaryHistoryByEmployee(id, page, size, sortBy, sortDirection, filterRequest);
+        return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
     @Operation(
@@ -84,14 +102,14 @@ public class SalaryController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<PaginatedResponse<ListSalaryResponse>>> getMySalaryHistory(
             @AuthenticationPrincipal UserDetails currentUser,
-            @RequestParam(defaultValue = "0") @Min(0) int page ,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "effectiveDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection,
             SalaryFilterRequest filterRequest
-    ){
+    ) {
         String email = currentUser.getUsername();
-        PaginatedResponse<ListSalaryResponse> responseList = salaryService.showEmployeeSalaryHistory(email,page,size,sortBy,sortDirection,filterRequest);
+        PaginatedResponse<ListSalaryResponse> responseList = salaryService.showEmployeeSalaryHistory(email, page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success(responseList));
     }
 
@@ -101,7 +119,7 @@ public class SalaryController {
     )
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ROLE_HR')")
-    public ResponseEntity<ApiResponse<Void>> deleteSalary(@PathVariable("id") UUID id){
+    public ResponseEntity<ApiResponse<Void>> deleteSalary(@PathVariable("id") UUID id) {
         salaryService.deleteSalary(id);
         return ResponseEntity.ok(ApiResponse.success("Salary deleted successfully"));
     }
