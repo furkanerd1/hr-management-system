@@ -1,6 +1,6 @@
 package com.furkanerd.hr_management_system.service.performancereview.impl;
 
-import com.furkanerd.hr_management_system.exception.*;
+import com.furkanerd.hr_management_system.exception.custom.*;
 import com.furkanerd.hr_management_system.mapper.PerformanceReviewMapper;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.performancereview.PerformanceReviewUpdateRequest;
@@ -37,7 +37,7 @@ class PerformanceReviewManagementServiceImpl implements PerformanceReviewManagem
         Employee reviewer = employeeRepository.findByEmail(email).orElseThrow(() -> new EmployeeNotFoundException(email));
 
         if (employee.getId().equals(reviewer.getId())) {
-            throw new SelfReviewNotAllowedException("Employee cannot review themselves");
+            throw new SelfReviewNotAllowedException(employee.getId());
         }
 
         LocalDate reviewDate = createRequest.reviewDate() != null ? createRequest.reviewDate() : LocalDate.now();

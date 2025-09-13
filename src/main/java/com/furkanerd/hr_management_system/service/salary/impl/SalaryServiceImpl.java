@@ -1,8 +1,8 @@
 package com.furkanerd.hr_management_system.service.salary.impl;
 
 import com.furkanerd.hr_management_system.constants.SortFieldConstants;
-import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
-import com.furkanerd.hr_management_system.exception.ResourceNotFoundException;
+import com.furkanerd.hr_management_system.exception.custom.EmployeeNotFoundException;
+import com.furkanerd.hr_management_system.exception.custom.ResourceNotFoundException;
 import com.furkanerd.hr_management_system.mapper.SalaryMapper;
 import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryFilterRequest;

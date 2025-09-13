@@ -1,8 +1,8 @@
 package com.furkanerd.hr_management_system.service.leaverequest.impl;
 
 import com.furkanerd.hr_management_system.constants.SortFieldConstants;
-import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
-import com.furkanerd.hr_management_system.exception.LeaveRequestNotFoundException;
+import com.furkanerd.hr_management_system.exception.custom.EmployeeNotFoundException;
+import com.furkanerd.hr_management_system.exception.custom.LeaveRequestNotFoundException;
 import com.furkanerd.hr_management_system.mapper.LeaveRequestMapper;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
@@ -87,7 +87,7 @@ class LeaveRequestQueryServiceImpl implements LeaveRequestQueryService {
     @Override
     public LeaveRequestDetailResponse getLeaveRequestById(UUID id) {
         return leaveRequestMapper.leaveRequestToLeaveRequestDetailResponse(leaveRequestRepository.findById(id)
-                .orElseThrow(() -> new LeaveRequestNotFoundException("LeaveRequestNotFoundException")));
+                .orElseThrow(() -> new LeaveRequestNotFoundException(id)));
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.furkanerd.hr_management_system.service.employee.impl;
 
 import com.furkanerd.hr_management_system.constants.SortFieldConstants;
-import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
+import com.furkanerd.hr_management_system.exception.custom.DepartmentNotFoundException;
 import com.furkanerd.hr_management_system.mapper.EmployeeMapper;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeFilterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;

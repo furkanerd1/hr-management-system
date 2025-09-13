@@ -1,6 +1,6 @@
 package com.furkanerd.hr_management_system.service.leaverequest.impl;
 
-import com.furkanerd.hr_management_system.exception.*;
+import com.furkanerd.hr_management_system.exception.custom.*;
 import com.furkanerd.hr_management_system.mapper.LeaveRequestMapper;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.leaverequest.LeaveRequestEditRequest;
@@ -99,7 +99,7 @@ class LeaveRequestManagementServiceImpl implements LeaveRequestManagementService
 
     private LeaveRequest getLeaveRequestEntity(UUID leaveRequestId) {
         return leaveRequestRepository.findById(leaveRequestId)
-                .orElseThrow(() -> new LeaveRequestNotFoundException("LeaveRequest not found with id:" + leaveRequestId));
+                .orElseThrow(() -> new LeaveRequestNotFoundException(leaveRequestId));
     }
 
     private LeaveRequest getPendingLeaveRequest(UUID leaveRequestId) {
@@ -124,12 +124,12 @@ class LeaveRequestManagementServiceImpl implements LeaveRequestManagementService
         switch (request.leaveType()) {
             case VACATION -> {
                 if (employee.getVacationBalance() < totalDays) {
-                    throw new InsufficientLeaveBalanceException("Employee does not have enough vacation days.");
+                    throw new InsufficientLeaveBalanceException(request.leaveType().toString(),employee.getVacationBalance(), totalDays);
                 }
             }
             case MATERNITY -> {
                 if (employee.getMaternityBalance() < totalDays) {
-                    throw new InsufficientLeaveBalanceException("Employee does not have enough maternity leave days.");
+                    throw new InsufficientLeaveBalanceException(request.leaveType().toString(),employee.getVacationBalance(), totalDays);
                 }
             }
         }

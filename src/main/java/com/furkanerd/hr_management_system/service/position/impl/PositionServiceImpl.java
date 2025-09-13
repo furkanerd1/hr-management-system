@@ -1,7 +1,7 @@
 package com.furkanerd.hr_management_system.service.position.impl;
 
 import com.furkanerd.hr_management_system.constants.SortFieldConstants;
-import com.furkanerd.hr_management_system.exception.PositionNotFoundException;
+import com.furkanerd.hr_management_system.exception.custom.PositionNotFoundException;
 import com.furkanerd.hr_management_system.mapper.PositionMapper;
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionFilterRequest;

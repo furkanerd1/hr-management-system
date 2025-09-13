@@ -1,9 +1,9 @@
 package com.furkanerd.hr_management_system.service.employee.impl;
 
-import com.furkanerd.hr_management_system.exception.CircularReferenceException;
-import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
-import com.furkanerd.hr_management_system.exception.PositionNotFoundException;
-import com.furkanerd.hr_management_system.exception.UnauthorizedActionException;
+import com.furkanerd.hr_management_system.exception.custom.CircularReferenceException;
+import com.furkanerd.hr_management_system.exception.custom.DepartmentNotFoundException;
+import com.furkanerd.hr_management_system.exception.custom.PositionNotFoundException;
+import com.furkanerd.hr_management_system.exception.custom.UnauthorizedActionException;
 import com.furkanerd.hr_management_system.mapper.EmployeeMapper;
 import com.furkanerd.hr_management_system.model.dto.request.employee.EmployeeUpdateRequest;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
@@ -72,7 +72,7 @@ class EmployeeManagementServiceImpl implements EmployeeManagementService {
 
         Employee manager = employeeCoreService.getEmployeeEntityById(managerId);
         if (isSubordinateOf(manager, toUpdate)) {
-            throw new CircularReferenceException("Cannot assign manager. This would create a circular reporting hierarchy.");
+            throw new CircularReferenceException();
         }
         return manager;
     }
