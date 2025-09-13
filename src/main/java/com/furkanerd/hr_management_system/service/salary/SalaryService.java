@@ -1,4 +1,4 @@
-package com.furkanerd.hr_management_system.service;
+package com.furkanerd.hr_management_system.service.salary;
 
 import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.salary.SalaryFilterRequest;

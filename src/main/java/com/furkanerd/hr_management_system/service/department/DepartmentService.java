@@ -1,4 +1,4 @@
-package com.furkanerd.hr_management_system.service;
+package com.furkanerd.hr_management_system.service.department;
 
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentFilterRequest;

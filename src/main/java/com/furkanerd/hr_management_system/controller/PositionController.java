@@ -7,7 +7,7 @@ import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.position.ListPositionResponse;
 import com.furkanerd.hr_management_system.model.dto.response.position.PositionDetailResponse;
-import com.furkanerd.hr_management_system.service.PositionService;
+import com.furkanerd.hr_management_system.service.position.PositionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

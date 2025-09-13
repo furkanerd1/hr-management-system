@@ -7,7 +7,9 @@ import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.ListEmployeeResponse;
-import com.furkanerd.hr_management_system.service.EmployeeService;
+import com.furkanerd.hr_management_system.service.employee.EmployeeManagementService;
+import com.furkanerd.hr_management_system.service.employee.EmployeeService;
+import com.furkanerd.hr_management_system.service.employee.EmployeeQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,9 +31,13 @@ import static com.furkanerd.hr_management_system.constants.ApiPaths.EMPLOYEES;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+    private final EmployeeQueryService employeeQueryService;
+    private final EmployeeManagementService employeeManagementService;
 
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(EmployeeService employeeService, EmployeeQueryService employeeQueryService, EmployeeManagementService employeeManagementService) {
         this.employeeService = employeeService;
+        this.employeeQueryService = employeeQueryService;
+        this.employeeManagementService = employeeManagementService;
     }
 
 
@@ -60,7 +66,7 @@ public class EmployeeController {
             @RequestParam(defaultValue = "asc") String sortDirection,
             EmployeeFilterRequest filterRequest
     ) {
-        PaginatedResponse<ListEmployeeResponse> result = employeeService.listAllEmployees(
+        PaginatedResponse<ListEmployeeResponse> result = employeeQueryService.listAllEmployees(
                 page, size, sortBy, sortDirection, filterRequest);
 
         return ResponseEntity.ok(ApiResponse.success("Employees retrieved successfully", result));
@@ -90,7 +96,7 @@ public class EmployeeController {
             @AuthenticationPrincipal UserDetails currentUser
     ) {
         String updaterEmail = currentUser.getUsername();
-        return ResponseEntity.ok(ApiResponse.success("Updated successfully", employeeService.updateEmployee(employeeIdToUpdate, updateRequest, updaterEmail)));
+        return ResponseEntity.ok(ApiResponse.success("Updated successfully", employeeManagementService.updateEmployee(employeeIdToUpdate, updateRequest, updaterEmail)));
     }
 
 
@@ -108,7 +114,7 @@ public class EmployeeController {
             @RequestParam(defaultValue = "asc") String sortDirection,
             EmployeeFilterRequest filterRequest
     ) {
-        PaginatedResponse<ListEmployeeResponse> responseList = employeeService.getEmployeesByDepartment(departmentId, page, size, sortBy, sortDirection, filterRequest);
+        PaginatedResponse<ListEmployeeResponse> responseList = employeeQueryService.getEmployeesByDepartment(departmentId, page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Employees retrieved for department successfully", responseList));
     }
 }

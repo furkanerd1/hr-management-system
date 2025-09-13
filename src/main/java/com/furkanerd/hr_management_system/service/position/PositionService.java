@@ -1,4 +1,4 @@
-package com.furkanerd.hr_management_system.service;
+package com.furkanerd.hr_management_system.service.position;
 
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.position.PositionFilterRequest;

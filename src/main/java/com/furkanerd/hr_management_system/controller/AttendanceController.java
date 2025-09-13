@@ -7,7 +7,8 @@ import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.AttendanceDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.attendance.ListAttendanceResponse;
-import com.furkanerd.hr_management_system.service.AttendanceService;
+import com.furkanerd.hr_management_system.service.attendance.AttendanceManagementService;
+import com.furkanerd.hr_management_system.service.attendance.AttendanceQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,10 +30,12 @@ import static com.furkanerd.hr_management_system.constants.ApiPaths.ATTENDANCE;
 @Tag(name = "Attendance Management", description = "Operations related to employee attendance records")
 public class AttendanceController {
 
-    private final AttendanceService attendanceService;
+    private final AttendanceQueryService attendanceQueryService;
+    private final AttendanceManagementService attendanceManagementService;
 
-    public AttendanceController(AttendanceService attendanceService) {
-        this.attendanceService = attendanceService;
+    public AttendanceController(AttendanceQueryService attendanceQueryService, AttendanceManagementService attendanceManagementService) {
+        this.attendanceQueryService = attendanceQueryService;
+        this.attendanceManagementService = attendanceManagementService;
     }
 
     @Operation(
@@ -48,7 +51,7 @@ public class AttendanceController {
             @RequestParam(defaultValue = "desc") String sortDirection,
             AttendanceFilterRequest filterRequest
     ) {
-        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.listAllAttendance(page, size, sortBy, sortDirection, filterRequest);
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceQueryService.listAllAttendance(page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Attendance records retrieved successfully", responseList));
     }
 
@@ -59,7 +62,7 @@ public class AttendanceController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<AttendanceDetailResponse>> getAttendanceById(@PathVariable UUID id) {
-        AttendanceDetailResponse attendance = attendanceService.getAttendanceById(id);
+        AttendanceDetailResponse attendance = attendanceQueryService.getAttendanceById(id);
         return ResponseEntity.ok(ApiResponse.success("Attendance record retrieved successfully", attendance));
     }
 
@@ -70,7 +73,7 @@ public class AttendanceController {
     @PostMapping("/manual")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<AttendanceDetailResponse>> createAttendance(@Valid @RequestBody AttendanceCreateRequest attendanceCreateRequest) {
-        AttendanceDetailResponse created = attendanceService.createAttendance(attendanceCreateRequest);
+        AttendanceDetailResponse created = attendanceManagementService.createAttendance(attendanceCreateRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Attendance record created successfully", created));
     }
@@ -83,7 +86,7 @@ public class AttendanceController {
     @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
     public ResponseEntity<ApiResponse<AttendanceDetailResponse>> checkIn(@AuthenticationPrincipal UserDetails currentUser) {
         String employeeEmail = currentUser.getUsername();
-        AttendanceDetailResponse checkedIn = attendanceService.autoCheckIn(employeeEmail);
+        AttendanceDetailResponse checkedIn = attendanceManagementService.autoCheckIn(employeeEmail);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Check-in successful", checkedIn));
     }
@@ -96,7 +99,7 @@ public class AttendanceController {
     @PreAuthorize("hasAuthority('ROLE_EMPLOYEE')")
     public ResponseEntity<ApiResponse<AttendanceDetailResponse>> checkOut(@AuthenticationPrincipal UserDetails currentUser) {
         String employeeEmail = currentUser.getUsername();
-        AttendanceDetailResponse checkedOut = attendanceService.autoCheckOut(employeeEmail);
+        AttendanceDetailResponse checkedOut = attendanceManagementService.autoCheckOut(employeeEmail);
         return ResponseEntity.ok(ApiResponse.success("Check-out successful", checkedOut));
     }
 
@@ -111,7 +114,7 @@ public class AttendanceController {
             @PathVariable UUID id,
             @Valid @RequestBody AttendanceUpdateRequest updateRequest
     ) {
-        AttendanceDetailResponse updated = attendanceService.updateAttendance(id, updateRequest);
+        AttendanceDetailResponse updated = attendanceManagementService.updateAttendance(id, updateRequest);
         return ResponseEntity.ok(ApiResponse.success("Attendance record updated successfully", updated));
     }
 
@@ -131,7 +134,7 @@ public class AttendanceController {
             AttendanceFilterRequest filterRequest
     ) {
         String employeeEmail = currentUser.getUsername();
-        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService.getAttendanceByEmployee(employeeEmail, page, size, sortBy, sortDirection, filterRequest);
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceQueryService.getAttendanceByEmployee(employeeEmail, page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("My attendance records retrieved successfully", responseList));
     }
 
@@ -149,7 +152,7 @@ public class AttendanceController {
             @RequestParam(defaultValue = "asc") String sortDirection,
             AttendanceFilterRequest filterRequest
     ) {
-        PaginatedResponse<ListAttendanceResponse> responseList = attendanceService
+        PaginatedResponse<ListAttendanceResponse> responseList = attendanceQueryService
                 .getAllAttendanceByEmployee(id, page, size, sortBy, sortDirection, filterRequest);
 
         return ResponseEntity.ok(ApiResponse.success(responseList));
@@ -162,7 +165,7 @@ public class AttendanceController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<Void>> deleteAttendance(@PathVariable UUID id) {
-        attendanceService.deleteAttendance(id);
+        attendanceManagementService.deleteAttendance(id);
         return ResponseEntity.ok(ApiResponse.success("Attendance record deleted successfully"));
     }
 }

@@ -1,4 +1,4 @@
-package com.furkanerd.hr_management_system.service.impl;
+package com.furkanerd.hr_management_system.service.auth.impl;
 
 import com.furkanerd.hr_management_system.exception.*;
 import com.furkanerd.hr_management_system.model.dto.request.LoginRequest;
@@ -11,13 +11,12 @@ import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.security.JwtUtil;
-import com.furkanerd.hr_management_system.service.AuthService;
-import com.furkanerd.hr_management_system.service.DepartmentService;
-import com.furkanerd.hr_management_system.service.PositionService;
+import com.furkanerd.hr_management_system.service.auth.AuthService;
+import com.furkanerd.hr_management_system.service.department.DepartmentService;
+import com.furkanerd.hr_management_system.service.position.PositionService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -54,7 +53,7 @@ class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
+            authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.email(),
                             loginRequest.password()

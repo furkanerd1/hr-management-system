@@ -7,7 +7,8 @@ import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.ListPerformanceReviewResponse;
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
-import com.furkanerd.hr_management_system.service.PerformanceReviewService;
+import com.furkanerd.hr_management_system.service.performancereview.PerformanceReviewManagementService;
+import com.furkanerd.hr_management_system.service.performancereview.PerformanceReviewQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,10 +32,12 @@ import static com.furkanerd.hr_management_system.constants.ApiPaths.PERFORMANCE_
 @Tag(name = "Performance Review", description = "Employee Performance Review management API")
 public class PerformanceReviewController {
 
-    private final PerformanceReviewService performanceReviewService;
+    private final PerformanceReviewQueryService performanceReviewQueryService;
+    private final PerformanceReviewManagementService performanceReviewManagementService;
 
-    public PerformanceReviewController(PerformanceReviewService performanceReviewService) {
-        this.performanceReviewService = performanceReviewService;
+    public PerformanceReviewController(PerformanceReviewQueryService performanceReviewQueryService, PerformanceReviewManagementService performanceReviewManagementService) {
+        this.performanceReviewQueryService = performanceReviewQueryService;
+        this.performanceReviewManagementService = performanceReviewManagementService;
     }
 
     @Operation(
@@ -50,7 +53,7 @@ public class PerformanceReviewController {
             @RequestParam(defaultValue = "desc") String sortDirection,
             PerformanceReviewFilterRequest filterRequest
     ) {
-        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.listAllPerformanceReviews(page, size, sortBy, sortDirection, filterRequest);
+        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewQueryService.listAllPerformanceReviews(page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", responseList));
     }
 
@@ -61,7 +64,7 @@ public class PerformanceReviewController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<PerformanceReviewDetailResponse>> getReview(@PathVariable("id") UUID id) {
-        PerformanceReviewDetailResponse review = performanceReviewService.getPerformanceReview(id);
+        PerformanceReviewDetailResponse review = performanceReviewQueryService.getPerformanceReview(id);
         return ResponseEntity.ok(ApiResponse.success("Performance review retrieved successfully", review));
     }
 
@@ -80,7 +83,7 @@ public class PerformanceReviewController {
             @RequestParam(defaultValue = "desc") String sortDirection,
             PerformanceReviewFilterRequest filterRequest
     ) {
-        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewService.getMyPerformanceReviews(currentUser.getUsername(), page, size, sortBy, sortDirection, filterRequest);
+        PaginatedResponse<ListPerformanceReviewResponse> responseList = performanceReviewQueryService.getMyPerformanceReviews(currentUser.getUsername(), page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("My performance reviews retrieved successfully", responseList));
     }
 
@@ -99,7 +102,7 @@ public class PerformanceReviewController {
             PerformanceReviewFilterRequest filterRequest
     ) {
         PaginatedResponse<ListPerformanceReviewResponse> responseList =
-                performanceReviewService.getPerformanceReviewsByEmployee(id, page, size, sortBy, sortDirection, filterRequest);
+                performanceReviewQueryService.getPerformanceReviewsByEmployee(id, page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Performance reviews retrieved successfully", responseList));
     }
 
@@ -115,7 +118,7 @@ public class PerformanceReviewController {
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         String email = userDetails.getUsername();
-        PerformanceReviewDetailResponse created = performanceReviewService.createPerformanceReview(createRequest, email);
+        PerformanceReviewDetailResponse created = performanceReviewManagementService.createPerformanceReview(createRequest, email);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Performance review created successfully", created));
     }
@@ -132,7 +135,7 @@ public class PerformanceReviewController {
             @Valid @RequestBody PerformanceReviewUpdateRequest updateRequest,
             @AuthenticationPrincipal UserDetails currentUser) {
         String reviewerEmail = currentUser.getUsername();
-        PerformanceReviewDetailResponse updated = performanceReviewService.updatePerformanceReview(id, updateRequest, reviewerEmail);
+        PerformanceReviewDetailResponse updated = performanceReviewManagementService.updatePerformanceReview(id, updateRequest, reviewerEmail);
         return ResponseEntity.ok(ApiResponse.success("Performance review updated successfully", updated));
     }
 
@@ -145,7 +148,7 @@ public class PerformanceReviewController {
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable UUID id, @AuthenticationPrincipal UserDetails currentUser) {
         String reviewerEmail = currentUser.getUsername();
-        performanceReviewService.deletePerformanceReview(id, reviewerEmail);
+        performanceReviewManagementService.deletePerformanceReview(id, reviewerEmail);
         return ResponseEntity.ok(ApiResponse.success("Performance review deleted successfully"));
     }
 }
