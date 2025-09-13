@@ -1,7 +1,7 @@
 package com.furkanerd.hr_management_system.service.department.impl;
 
 import com.furkanerd.hr_management_system.constants.SortFieldConstants;
-import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
+import com.furkanerd.hr_management_system.exception.custom.DepartmentNotFoundException;
 import com.furkanerd.hr_management_system.mapper.DepartmentMapper;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentCreateRequest;
 import com.furkanerd.hr_management_system.model.dto.request.department.DepartmentFilterRequest;

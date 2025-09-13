@@ -1,6 +1,6 @@
 package com.furkanerd.hr_management_system.service.auth.impl;
 
-import com.furkanerd.hr_management_system.exception.*;
+import com.furkanerd.hr_management_system.exception.custom.*;
 import com.furkanerd.hr_management_system.model.dto.request.LoginRequest;
 import com.furkanerd.hr_management_system.model.dto.request.RegisterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.auth.LoginResponse;
