@@ -1,4 +1,4 @@
-package com.furkanerd.hr_management_system.service.impl;
+package com.furkanerd.hr_management_system.service.position.impl;
 
 import com.furkanerd.hr_management_system.constants.SortFieldConstants;
 import com.furkanerd.hr_management_system.exception.PositionNotFoundException;
@@ -13,7 +13,7 @@ import com.furkanerd.hr_management_system.model.dto.response.position.ListPositi
 import com.furkanerd.hr_management_system.model.dto.response.position.PositionDetailResponse;
 import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.repository.PositionRepository;
-import com.furkanerd.hr_management_system.service.PositionService;
+import com.furkanerd.hr_management_system.service.position.PositionService;
 import com.furkanerd.hr_management_system.util.SortFieldValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

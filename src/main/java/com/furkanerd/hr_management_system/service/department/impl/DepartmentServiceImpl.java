@@ -1,4 +1,4 @@
-package com.furkanerd.hr_management_system.service.impl;
+package com.furkanerd.hr_management_system.service.department.impl;
 
 import com.furkanerd.hr_management_system.constants.SortFieldConstants;
 import com.furkanerd.hr_management_system.exception.DepartmentNotFoundException;
@@ -11,7 +11,7 @@ import com.furkanerd.hr_management_system.model.dto.response.department.Departme
 import com.furkanerd.hr_management_system.model.dto.response.department.ListDepartmentResponse;
 import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.repository.DepartmentRepository;
-import com.furkanerd.hr_management_system.service.DepartmentService;
+import com.furkanerd.hr_management_system.service.department.DepartmentService;
 import com.furkanerd.hr_management_system.specification.DepartmentSpecification;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
 import com.furkanerd.hr_management_system.util.SortFieldValidator;

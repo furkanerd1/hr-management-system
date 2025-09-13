@@ -1,4 +1,4 @@
-package com.furkanerd.hr_management_system.service.impl;
+package com.furkanerd.hr_management_system.service.salary.impl;
 
 import com.furkanerd.hr_management_system.constants.SortFieldConstants;
 import com.furkanerd.hr_management_system.exception.EmployeeNotFoundException;
@@ -13,7 +13,7 @@ import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.Salary;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.repository.SalaryRepository;
-import com.furkanerd.hr_management_system.service.SalaryService;
+import com.furkanerd.hr_management_system.service.salary.SalaryService;
 import com.furkanerd.hr_management_system.specification.SalarySpecification;
 import com.furkanerd.hr_management_system.util.PaginationUtils;
 import com.furkanerd.hr_management_system.util.SortFieldValidator;

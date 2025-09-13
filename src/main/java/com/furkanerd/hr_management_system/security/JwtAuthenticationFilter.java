@@ -1,7 +1,7 @@
 package com.furkanerd.hr_management_system.security;
 
 import com.furkanerd.hr_management_system.model.entity.Employee;
-import com.furkanerd.hr_management_system.service.EmployeeService;
+import com.furkanerd.hr_management_system.service.employee.EmployeeService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package com.furkanerd.hr_management_system.service;
+package com.furkanerd.hr_management_system.service.auth;
 
 import com.furkanerd.hr_management_system.model.dto.request.LoginRequest;
 import com.furkanerd.hr_management_system.model.dto.request.RegisterRequest;

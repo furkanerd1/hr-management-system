@@ -6,7 +6,7 @@ import com.furkanerd.hr_management_system.model.dto.request.RegisterRequest;
 import com.furkanerd.hr_management_system.model.dto.response.ApiResponse;
 import com.furkanerd.hr_management_system.model.dto.response.auth.LoginResponse;
 import com.furkanerd.hr_management_system.model.dto.response.auth.RegisterResponse;
-import com.furkanerd.hr_management_system.service.AuthService;
+import com.furkanerd.hr_management_system.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

@@ -8,7 +8,8 @@ import com.furkanerd.hr_management_system.model.dto.response.PaginatedResponse;
 import com.furkanerd.hr_management_system.model.dto.response.employee.EmployeeLeaveBalanceResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveRequestDetailResponse;
 import com.furkanerd.hr_management_system.model.dto.response.leaverequest.ListLeaveRequestResponse;
-import com.furkanerd.hr_management_system.service.LeaveRequestService;
+import com.furkanerd.hr_management_system.service.leaverequest.LeaveRequestManagementService;
+import com.furkanerd.hr_management_system.service.leaverequest.LeaveRequestQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,11 +32,14 @@ import static com.furkanerd.hr_management_system.constants.ApiPaths.*;
 @Tag(name = "Leave Request", description = "Employee leave request management API")
 public class LeaveRequestController {
 
-    private final LeaveRequestService leaveRequestService;
+    private final LeaveRequestQueryService leaveRequestQueryService;
+    private final LeaveRequestManagementService leaveRequestManagementService;
 
-    public LeaveRequestController(LeaveRequestService leaveRequestService) {
-        this.leaveRequestService = leaveRequestService;
+    public LeaveRequestController(LeaveRequestQueryService leaveRequestQueryService, LeaveRequestManagementService leaveRequestManagementService) {
+        this.leaveRequestQueryService = leaveRequestQueryService;
+        this.leaveRequestManagementService = leaveRequestManagementService;
     }
+
 
     @Operation(
             summary = "Get all leave requests",
@@ -50,7 +54,7 @@ public class LeaveRequestController {
             @RequestParam(defaultValue = "desc") String sortDirection,
             LeaveRequestFilterRequest filterRequest
     ) {
-        PaginatedResponse<ListLeaveRequestResponse> responseList = leaveRequestService.listAllLeaveRequests(page, size, sortBy, sortDirection, filterRequest);
+        PaginatedResponse<ListLeaveRequestResponse> responseList = leaveRequestQueryService.listAllLeaveRequests(page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Leave requests retrieved successfully", responseList));
     }
 
@@ -61,7 +65,7 @@ public class LeaveRequestController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<LeaveRequestDetailResponse>> getLeaveRequestById(@PathVariable UUID id) {
-        LeaveRequestDetailResponse leave = leaveRequestService.getLeaveRequestById(id);
+        LeaveRequestDetailResponse leave = leaveRequestQueryService.getLeaveRequestById(id);
         return ResponseEntity.ok(ApiResponse.success("Leave request retrieved successfully", leave));
     }
 
@@ -81,7 +85,7 @@ public class LeaveRequestController {
             LeaveRequestFilterRequest filterRequest
 
     ) {
-        PaginatedResponse<ListLeaveRequestResponse> responseList = leaveRequestService
+        PaginatedResponse<ListLeaveRequestResponse> responseList = leaveRequestQueryService
                 .getMyLeaveRequests(currentUser.getUsername(), page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("My leave requests retrieved successfully", responseList));
     }
@@ -93,7 +97,7 @@ public class LeaveRequestController {
     @GetMapping("/my-balance")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<EmployeeLeaveBalanceResponse>> getMyLeaveBalance(@AuthenticationPrincipal UserDetails currentUser) {
-        EmployeeLeaveBalanceResponse balance = leaveRequestService.getMyLeaveBalance(currentUser.getUsername());
+        EmployeeLeaveBalanceResponse balance = leaveRequestQueryService.getMyLeaveBalance(currentUser.getUsername());
         return ResponseEntity.ok(ApiResponse.success("Leave balance retrieved successfully", balance));
     }
 
@@ -105,7 +109,7 @@ public class LeaveRequestController {
     @GetMapping("/{employeeId}/balance")
     @PreAuthorize("hasAnyAuthority('ROLE_HR', 'ROLE_MANAGER')")
     public ResponseEntity<ApiResponse<EmployeeLeaveBalanceResponse>> getEmployeeLeaveBalance(@PathVariable UUID employeeId) {
-        EmployeeLeaveBalanceResponse balance = leaveRequestService.getEmployeeLeaveBalance(employeeId);
+        EmployeeLeaveBalanceResponse balance = leaveRequestQueryService.getEmployeeLeaveBalance(employeeId);
         return ResponseEntity.ok(ApiResponse.success("Leave balance retrieved successfully", balance));
     }
 
@@ -121,7 +125,7 @@ public class LeaveRequestController {
             @AuthenticationPrincipal UserDetails currentUser
     ) {
         String requester = currentUser.getUsername();
-        LeaveRequestDetailResponse created = leaveRequestService.createLeaveRequest(createRequest, requester);
+        LeaveRequestDetailResponse created = leaveRequestManagementService.createLeaveRequest(createRequest, requester);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Leave request created successfully", created));
     }
@@ -138,7 +142,7 @@ public class LeaveRequestController {
             @AuthenticationPrincipal UserDetails currentUser
     ) {
         String requesterEmail = currentUser.getUsername();
-        LeaveRequestDetailResponse updated = leaveRequestService.editLeaveRequest(id, editRequest, requesterEmail);
+        LeaveRequestDetailResponse updated = leaveRequestManagementService.editLeaveRequest(id, editRequest, requesterEmail);
         return ResponseEntity.ok(ApiResponse.success("Leave request updated successfully", updated));
     }
 
@@ -153,7 +157,7 @@ public class LeaveRequestController {
             @AuthenticationPrincipal UserDetails currentUser
     ) {
         String approverEmail = currentUser.getUsername();
-        LeaveRequestDetailResponse approved = leaveRequestService.approveLeaveRequest(leaveRequestId, approverEmail);
+        LeaveRequestDetailResponse approved = leaveRequestManagementService.approveLeaveRequest(leaveRequestId, approverEmail);
         return ResponseEntity.ok(ApiResponse.success("Leave request approved successfully", approved));
     }
 
@@ -168,7 +172,7 @@ public class LeaveRequestController {
             @AuthenticationPrincipal UserDetails currentUser
     ) {
         String rejecterEmail = currentUser.getUsername();
-        LeaveRequestDetailResponse rejected = leaveRequestService.rejectLeaveRequest(leaveRequestId, rejecterEmail);
+        LeaveRequestDetailResponse rejected = leaveRequestManagementService.rejectLeaveRequest(leaveRequestId, rejecterEmail);
         return ResponseEntity.ok(ApiResponse.success("Leave request rejected successfully", rejected));
     }
 
@@ -181,7 +185,7 @@ public class LeaveRequestController {
     public ResponseEntity<ApiResponse<Void>> cancelLeaveRequest(@PathVariable UUID id, @AuthenticationPrincipal UserDetails currentUser) {
 
         String requesterEmail = currentUser.getUsername();
-        leaveRequestService.cancelLeaveRequest(id, requesterEmail);
+        leaveRequestManagementService.cancelLeaveRequest(id, requesterEmail);
         return ResponseEntity.ok(ApiResponse.success("Leave request cancelled successfully"));
     }
 }
