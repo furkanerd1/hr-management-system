@@ -25,19 +25,19 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "first_name", nullable = false , length = 50)
+    @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false ,length = 50)
+    @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 
-    @Column(unique = true,nullable = false , length = 100)
+    @Column(unique = true, nullable = false, length = 100)
     private String email;
 
     @Column(name = "password_hash")
     private String password;
 
-    @Column(name = "phone_number",length = 20,unique = true)
+    @Column(name = "phone_number", length = 20, unique = true)
     private String phone;
 
     @Column(name = "hire_date", nullable = false)
@@ -83,7 +83,7 @@ public class Employee {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at",nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @Override

@@ -9,10 +9,12 @@ import com.furkanerd.hr_management_system.model.entity.Department;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.Position;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
+import com.furkanerd.hr_management_system.model.enums.NotificationTypeEnum;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.security.JwtUtil;
 import com.furkanerd.hr_management_system.service.auth.AuthService;
 import com.furkanerd.hr_management_system.service.department.DepartmentService;
+import com.furkanerd.hr_management_system.service.notification.NotificationService;
 import com.furkanerd.hr_management_system.service.position.PositionService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,8 +41,9 @@ class AuthServiceImpl implements AuthService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentService departmentService;
     private final PositionService positionService;
+    private final NotificationService notificationService;
 
-    public AuthServiceImpl(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmployeeRepository employeeRepository, DepartmentService departmentService, PositionService positionService) {
+    public AuthServiceImpl(AuthenticationManager authenticationManager, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EmployeeRepository employeeRepository, DepartmentService departmentService, PositionService positionService, NotificationService notificationService) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
@@ -48,6 +51,7 @@ class AuthServiceImpl implements AuthService {
         this.employeeRepository = employeeRepository;
         this.departmentService = departmentService;
         this.positionService = positionService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -143,6 +147,13 @@ class AuthServiceImpl implements AuthService {
             employee.setManager(manager);
         }
         Employee savedEmployee = employeeRepository.save(employee);
+
+        // SEND MAIL + NOTIFICATION
+        String subject = "Welcome to HR Management System";
+        String message = "Hello " + savedEmployee.getFirstName() + "," + "Your temporary password is: " + tempPassword + " " + "Please login and change your password.";
+
+        notificationService.notify(savedEmployee, subject, message, NotificationTypeEnum.GENERAL);
+
         return new RegisterResponse(
                 savedEmployee.getId(),
                 savedEmployee.getEmail(),

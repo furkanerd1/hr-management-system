@@ -7,8 +7,10 @@ import com.furkanerd.hr_management_system.model.dto.request.performancereview.Pe
 import com.furkanerd.hr_management_system.model.dto.response.performancereview.PerformanceReviewDetailResponse;
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.PerformanceReview;
+import com.furkanerd.hr_management_system.model.enums.NotificationTypeEnum;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.repository.PerformanceReviewRepository;
+import com.furkanerd.hr_management_system.service.notification.NotificationService;
 import com.furkanerd.hr_management_system.service.performancereview.PerformanceReviewManagementService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +25,13 @@ class PerformanceReviewManagementServiceImpl implements PerformanceReviewManagem
     private final PerformanceReviewRepository performanceReviewRepository;
     private final EmployeeRepository employeeRepository;
     private final PerformanceReviewMapper performanceReviewMapper;
+    private final NotificationService notificationService;
 
-    PerformanceReviewManagementServiceImpl(PerformanceReviewRepository performanceReviewRepository, EmployeeRepository employeeRepository, PerformanceReviewMapper performanceReviewMapper) {
+    PerformanceReviewManagementServiceImpl(PerformanceReviewRepository performanceReviewRepository, EmployeeRepository employeeRepository, PerformanceReviewMapper performanceReviewMapper, NotificationService notificationService) {
         this.performanceReviewRepository = performanceReviewRepository;
         this.employeeRepository = employeeRepository;
         this.performanceReviewMapper = performanceReviewMapper;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -54,7 +58,14 @@ class PerformanceReviewManagementServiceImpl implements PerformanceReviewManagem
                 .reviewDate(reviewDate)
                 .build();
 
-        return performanceReviewMapper.performanceReviewToPerformanceReviewDetailResponse(performanceReviewRepository.save(performanceReview));
+        PerformanceReview savedReview = performanceReviewRepository.save(performanceReview);
+
+        notificationService.notify(employee,
+                "New Performance Review",
+                "You have a new performance review from " + reviewer.getFirstName() + " " + reviewer.getLastName() + ".",
+                NotificationTypeEnum.PERFORMANCE);
+
+        return performanceReviewMapper.performanceReviewToPerformanceReviewDetailResponse(savedReview);
     }
 
     @Override
@@ -78,7 +89,14 @@ class PerformanceReviewManagementServiceImpl implements PerformanceReviewManagem
         }
 
         performanceReview.setReviewDate(reviewDate);
-        return performanceReviewMapper.performanceReviewToPerformanceReviewDetailResponse(performanceReviewRepository.save(performanceReview));
+        PerformanceReview savedReview = performanceReviewRepository.save(performanceReview);
+
+        notificationService.notify(performanceReview.getEmployee(),
+                "Performance Review Updated",
+                "Your performance review has been updated by " + reviewer.getFirstName() + " " + reviewer.getLastName() + ".",
+                NotificationTypeEnum.PERFORMANCE);
+
+        return performanceReviewMapper.performanceReviewToPerformanceReviewDetailResponse(savedReview);
     }
 
     @Override
