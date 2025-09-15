@@ -1,7 +1,6 @@
 package com.furkanerd.hr_management_system.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.furkanerd.hr_management_system.model.enums.NotificationTypeEnum;
+import com.furkanerd.hr_management_system.model.enums.AnnouncementType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -11,42 +10,38 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "notification")
+@Table(name = "announcements")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Notification {
+public class Announcement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "employee_id" ,nullable = false)
-    private Employee employee;
+    @Column(nullable = false)
+    private String title;
 
-    @Column(nullable = false,columnDefinition = "TEXT")
-    private String message;
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private NotificationTypeEnum type;
+    private AnnouncementType type;
 
-    @Column(name = "is_read", nullable = false)
-    @JsonProperty("isRead")
-    @Builder.Default
-    private boolean read = false;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id")
+    private Employee createdBy;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Notification that = (Notification) o;
+        Announcement that = (Announcement) o;
         return Objects.equals(id, that.id);
     }
 

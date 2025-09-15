@@ -8,9 +8,11 @@ import com.furkanerd.hr_management_system.model.dto.response.leaverequest.LeaveR
 import com.furkanerd.hr_management_system.model.entity.Employee;
 import com.furkanerd.hr_management_system.model.entity.LeaveRequest;
 import com.furkanerd.hr_management_system.model.enums.LeaveStatusEnum;
+import com.furkanerd.hr_management_system.model.enums.NotificationTypeEnum;
 import com.furkanerd.hr_management_system.repository.EmployeeRepository;
 import com.furkanerd.hr_management_system.repository.LeaveRequestRepository;
 import com.furkanerd.hr_management_system.service.leaverequest.LeaveRequestManagementService;
+import com.furkanerd.hr_management_system.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,11 +27,13 @@ class LeaveRequestManagementServiceImpl implements LeaveRequestManagementService
     private final LeaveRequestRepository leaveRequestRepository;
     private final LeaveRequestMapper leaveRequestMapper;
     private final EmployeeRepository employeeRepository;
+    private final NotificationService notificationService;
 
-    LeaveRequestManagementServiceImpl(LeaveRequestRepository leaveRequestRepository, LeaveRequestMapper leaveRequestMapper, EmployeeRepository employeeRepository) {
+    LeaveRequestManagementServiceImpl(LeaveRequestRepository leaveRequestRepository, LeaveRequestMapper leaveRequestMapper, EmployeeRepository employeeRepository, NotificationService notificationService) {
         this.leaveRequestRepository = leaveRequestRepository;
         this.leaveRequestMapper = leaveRequestMapper;
         this.employeeRepository = employeeRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -38,8 +42,13 @@ class LeaveRequestManagementServiceImpl implements LeaveRequestManagementService
         validateLeaveBalance(createRequest, requester);
 
         LeaveRequest leaveRequest = buildLeaveRequest(createRequest, requester);
+        LeaveRequestDetailResponse response = saveAndMap(leaveRequest);
 
-        return saveAndMap(leaveRequest);
+        notificationService.notify(requester,
+                "Leave Request Submitted",
+                "Your leave request from " + leaveRequest.getStartDate() + " to " + leaveRequest.getEndDate() + " has been submitted.",
+                NotificationTypeEnum.LEAVE);
+        return response;
     }
 
     @Override
@@ -60,8 +69,14 @@ class LeaveRequestManagementServiceImpl implements LeaveRequestManagementService
         Employee approver = getEmployeeByEmail(approverEmail);
 
         processApproval(leaveRequest, approver);
+        LeaveRequestDetailResponse response = saveAndMap(leaveRequest);
 
-        return saveAndMap(leaveRequest);
+        notificationService.notify(leaveRequest.getEmployee(),
+                "Leave Request Approved",
+                "Your leave request from " + leaveRequest.getStartDate() + " to " + leaveRequest.getEndDate() + " has been approved by " + approver.getFirstName() + " " + approver.getLastName() + ".",
+                NotificationTypeEnum.LEAVE);
+
+        return response;
     }
 
     @Override
@@ -73,7 +88,14 @@ class LeaveRequestManagementServiceImpl implements LeaveRequestManagementService
         leaveRequest.setApprover(approver);
         leaveRequest.setApprovedAt(LocalDateTime.now());
 
-        return saveAndMap(leaveRequest);
+        LeaveRequestDetailResponse response = saveAndMap(leaveRequest);
+
+        notificationService.notify(leaveRequest.getEmployee(),
+                "Leave Request Rejected",
+                "Your leave request from " + leaveRequest.getStartDate() + " to " + leaveRequest.getEndDate() + " has been rejected by " + approver.getFirstName() + " " + approver.getLastName() + ".",
+                NotificationTypeEnum.LEAVE);
+
+        return response;
     }
 
     @Override
@@ -89,6 +111,11 @@ class LeaveRequestManagementServiceImpl implements LeaveRequestManagementService
         }
 
         leaveRequestRepository.delete(leaveRequest);
+
+        notificationService.notify(leaveRequest.getEmployee(),
+                "Leave Request Cancelled",
+                "Your leave request from " + leaveRequest.getStartDate() + " to " + leaveRequest.getEndDate() + " has been cancelled.",
+                NotificationTypeEnum.LEAVE);
     }
 
 
@@ -124,12 +151,12 @@ class LeaveRequestManagementServiceImpl implements LeaveRequestManagementService
         switch (request.leaveType()) {
             case VACATION -> {
                 if (employee.getVacationBalance() < totalDays) {
-                    throw new InsufficientLeaveBalanceException(request.leaveType().toString(),employee.getVacationBalance(), totalDays);
+                    throw new InsufficientLeaveBalanceException(request.leaveType().toString(), employee.getVacationBalance(), totalDays);
                 }
             }
             case MATERNITY -> {
                 if (employee.getMaternityBalance() < totalDays) {
-                    throw new InsufficientLeaveBalanceException(request.leaveType().toString(),employee.getVacationBalance(), totalDays);
+                    throw new InsufficientLeaveBalanceException(request.leaveType().toString(), employee.getVacationBalance(), totalDays);
                 }
             }
         }
