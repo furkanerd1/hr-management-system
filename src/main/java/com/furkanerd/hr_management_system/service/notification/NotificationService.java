@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public interface NotificationService {
     void notify(Employee employee, String subject, String message, NotificationTypeEnum type);
+    void notifyAllEmployeesForAnnouncement(String subject, String message);
     PaginatedResponse<NotificationResponse> getMyNotifications(String email, int page, int size, String sortBy, String sortDirection);
     NotificationResponse markAsRead(UUID notificationId, String email);
     void markAllAsRead(String email);

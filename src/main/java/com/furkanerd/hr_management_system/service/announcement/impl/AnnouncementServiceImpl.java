@@ -50,14 +50,9 @@ class AnnouncementServiceImpl implements AnnouncementService {
                 .build();
 
         Announcement savedAnnouncement = announcementRepository.save(announcement);
-        List<Employee> employees = employeeRepository.findAll();
 
         String subject = "[" + savedAnnouncement.getType() + "] " + savedAnnouncement.getTitle();
-        employees.forEach(emp ->
-                notificationService.notify(
-                        emp,
-                        "📢 New announcement: " + subject, savedAnnouncement.getContent(), NotificationTypeEnum.ANNOUNCEMENT
-                ));
+        notificationService.notifyAllEmployeesForAnnouncement("📢 New announcement: " + subject, savedAnnouncement.getContent());
 
         return announcementMapper.toAnnouncementResponse(savedAnnouncement);
     }

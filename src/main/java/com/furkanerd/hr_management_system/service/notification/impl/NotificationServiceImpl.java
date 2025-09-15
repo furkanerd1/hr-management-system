@@ -55,7 +55,30 @@ class NotificationServiceImpl implements NotificationService {
         } catch (Exception e) {
             log.error("Mail sending failed for notification {} to employee {}: {}", notification.getId(), employee.getEmail(), e.getMessage());
         }
+    }
 
+    @Override
+    @Transactional
+    public void notifyAllEmployeesForAnnouncement(String subject, String message) {
+        List<Employee> employees = employeeRepository.findAll();
+
+        List<Notification> notifications = employees.stream()
+                .map(emp -> Notification.builder()
+                        .employee(emp)
+                        .message(message)
+                        .type(NotificationTypeEnum.ANNOUNCEMENT)
+                        .read(false)
+                        .build())
+                .toList();
+
+        notificationRepository.saveAll(notifications);
+
+        List<String> emails = employees.stream().map(Employee::getEmail).toList();
+        try {
+            mailService.sendBulkAnnouncementMail(emails, subject, message);
+        } catch (Exception e) {
+            log.error("Bulk announcement mail failed: {}", e.getMessage());
+        }
     }
 
     @Override
