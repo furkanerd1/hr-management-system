@@ -1,9 +1,11 @@
 package com.furkanerd.hr_management_system.model.dto.response.employee;
 
 import com.furkanerd.hr_management_system.model.enums.EmployeeStatusEnum;
+import lombok.Builder;
 
 import java.util.UUID;
 
+@Builder
 public record ListEmployeeResponse(
         UUID id,
         String fullName,

@@ -143,6 +143,9 @@ class AttendanceManagementServiceImpl implements AttendanceManagementService {
      * @return true if valid, false otherwise
      */
     private boolean isValidCheckInTime(LocalTime time) {
+        if (time == null) {
+            return false;
+        }
         return !time.isBefore(CHECK_IN_START_TIME) && !time.isAfter(CHECK_IN_END_TIME);
     }
 
@@ -165,6 +168,12 @@ class AttendanceManagementServiceImpl implements AttendanceManagementService {
      * @param checkOutTime Check-out time
      */
     private void validateCheckOutTime(LocalTime checkInTime, LocalTime checkOutTime) {
+        if (checkInTime == null) {
+            throw new InvalidAttendanceTimeException("Check-in time cannot be null");
+        }
+        if (checkOutTime == null) {
+            throw new InvalidAttendanceTimeException("Check-out time cannot be null");
+        }
         if (!checkOutTime.isAfter(checkInTime)) {
             throw new InvalidAttendanceTimeException("Check-out time must be after check-in time");
         }

@@ -1,9 +1,12 @@
 package com.furkanerd.hr_management_system.model.dto.response.performancereview;
 
+import lombok.Builder;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Builder
 public record PerformanceReviewDetailResponse(
         UUID id,
         UUID employeeId,

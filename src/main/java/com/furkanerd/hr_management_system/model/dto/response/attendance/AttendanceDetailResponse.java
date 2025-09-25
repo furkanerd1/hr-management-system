@@ -1,10 +1,13 @@
 package com.furkanerd.hr_management_system.model.dto.response.attendance;
 
+import lombok.Builder;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
+@Builder
 public record AttendanceDetailResponse(
         UUID id,
         UUID employeeId,
