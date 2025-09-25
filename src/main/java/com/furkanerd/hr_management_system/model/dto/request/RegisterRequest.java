@@ -3,11 +3,13 @@ package com.furkanerd.hr_management_system.model.dto.request;
 import com.furkanerd.hr_management_system.model.enums.EmployeeRoleEnum;
 import com.furkanerd.hr_management_system.model.enums.EmployeeStatusEnum;
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Builder
 public record RegisterRequest(
 
     @NotBlank(message = "First name is required")
