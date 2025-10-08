@@ -45,7 +45,7 @@ public class DepartmentController {
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "name") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection,
-            DepartmentFilterRequest filterRequest
+            @RequestParam(required = false) DepartmentFilterRequest filterRequest
     ) {
         PaginatedResponse<ListDepartmentResponse> departments = departmentService.listAllDepartments(page, size, sortBy, sortDirection, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Departments retrieved successfully", departments));

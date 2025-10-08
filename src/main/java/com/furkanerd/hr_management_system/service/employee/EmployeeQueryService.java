@@ -11,5 +11,4 @@ public interface EmployeeQueryService {
     PaginatedResponse<ListEmployeeResponse> listAllEmployees(int page, int size, String sortBy, String sortDirection, EmployeeFilterRequest filterRequest);
 
     PaginatedResponse<ListEmployeeResponse> getEmployeesByDepartment(UUID departmentId, int page, int size, String sortBy, String sortDirection, EmployeeFilterRequest filterRequest);
-
 }

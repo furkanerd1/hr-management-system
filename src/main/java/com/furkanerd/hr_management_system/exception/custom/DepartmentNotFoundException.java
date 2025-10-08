@@ -12,7 +12,7 @@ public class DepartmentNotFoundException extends HrNotFoundException {
     }
 
     public DepartmentNotFoundException(String message, Throwable cause) {
-        super("PerformanceReview",message);
+        super("Department",message);
     }
 
     @Override
